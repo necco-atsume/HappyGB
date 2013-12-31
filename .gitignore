@@ -1,0 +1,5 @@
+HappyGB/obj/*
+HappyGB/bin/*
+
+*.gb
+*.userprefs
