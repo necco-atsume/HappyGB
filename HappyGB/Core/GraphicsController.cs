@@ -105,6 +105,8 @@ namespace HappyGB.Core
 			clock = scanline = 0;
 			lcdcHblank = lcdcOAM = lcdcScanline = lcdcVblank = false;
 			blitter = new SurfaceBlitter();
+			vram = new byte[0x2000];
+			oam = new byte[0x9F];
 		}
 
 		/// <summary>
@@ -175,23 +177,27 @@ namespace HappyGB.Core
 
 		public byte ReadOAM8(ushort address)
 		{
-			throw new NotImplementedException();
+			return oam[address - 0xFE00];
 		}
 
 		public void WriteOAM8(ushort address, byte value)
 		{
-			throw new NotImplementedException();
+			oam[address - 0xFE00] = value;
 		}
 
 		public byte ReadVRAM8(ushort address)
 		{
-			throw new NotImplementedException();
+			return vram[address - 0x8000];
 		}
 
 		public void WriteVRAM8(ushort address, byte value)
 		{
-			//Update the surface blitter.
-			throw new NotImplementedException();
+			vram[address - 0x8000] = value;
+			if (address < 0x9800)
+			{
+				throw new NotImplementedException();
+				//blitter.updatetile();
+			}
 		}
 
 		/// <summary>
@@ -199,9 +205,12 @@ namespace HappyGB.Core
 		/// </summary>
 		private void WriteScanline()
 		{
-			//Get x, y index in tile, and stuff, then draw the tiles.
-			throw new NotImplementedException();
-			//blitter.DrawTileScan( ...
+			for (int x = 0; x < 160; x += 8) 
+			{
+				//get the tile at the x,y.
+				//get the offset
+				//draw that tile
+			}
 		}
 	}
 }

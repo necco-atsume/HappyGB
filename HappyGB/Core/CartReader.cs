@@ -19,6 +19,7 @@ namespace HappyGB.Core
 		{
 			//TODO: Get 0x147 and create a MBC from that.
 
+			reader.BaseStream.Seek(0, SeekOrigin.Begin);
 			return new NoMBC(this);
 		}
 
@@ -29,7 +30,10 @@ namespace HappyGB.Core
 
 		public byte[] GetBuffer(int length)
 		{
-			return reader.ReadBytes(length);
+			byte[] buf = new byte[length];
+			for (int i = 0; i < length; i++)
+				buf[i] = reader.ReadByte();
+			return buf;
 		}
 
 		public void Dispose()

@@ -7,7 +7,6 @@ namespace HappyGB.Core
 		IMemoryBankController cart;
 		GraphicsController gfx;
 		MemoryMap mem;
-		IOController io;
 		InterruptScheduler timer;
 		GBZ80 cpu;
 
@@ -16,10 +15,9 @@ namespace HappyGB.Core
 			CartReader cartReader = new CartReader("Tetris.gb");
 			cart = cartReader.CreateMBC();
 			cartReader.Dispose();
-			io = new IOController();
 			gfx = new GraphicsController();
-			mem = new MemoryMap(cart, gfx, io);
 			timer = new InterruptScheduler();
+			mem = new MemoryMap(cart, gfx, timer);
 			cpu = new GBZ80(mem);
 		}
 

@@ -9,6 +9,8 @@ namespace HappyGB.Core
 			fixed(RegisterGroup* rp = &R)
 			{
 				byte opFirst = Fetch8();
+				//System.Diagnostics.Debug.WriteLine("op:" + opFirst.ToString("X"));
+
 				switch (opFirst)
 				{
 				case 0x00:
@@ -348,7 +350,6 @@ namespace HappyGB.Core
 					Tick(4);
 					break;
 				case 0x52:
-					R.d = R.d;
 					Tick(4);
 					break;
 				case 0x53:
@@ -384,7 +385,6 @@ namespace HappyGB.Core
 					Tick(4);
 					break;
 				case 0x5B:
-					R.e = R.e;
 					Tick(4);
 					break;
 				case 0x5C:
@@ -404,329 +404,606 @@ namespace HappyGB.Core
 					Tick(4);
 					break;
 				case 0x60:
+					R.h = R.b;
+					Tick(4);
 					break;
 				case 0x61:
+					R.h = R.c;
+					Tick(4);
 					break;
 				case 0x62:
+					R.h = R.d;
+					Tick(4);
 					break;
 				case 0x63:
+					R.h = R.e;
+					Tick(4);
 					break;
 				case 0x64:
+					R.h = R.h;
+					Tick(4);
 					break;
 				case 0x65:
+					R.h = R.l;
+					Tick(4);
 					break;
 				case 0x66:
+					R.h = M[R.hl];
+					Tick(8);
 					break;
 				case 0x67:
+					R.h = R.a;
+					Tick(4);
 					break;
 				case 0x68:
+					R.l = R.b;
+					Tick(4);
 					break;
 				case 0x69:
+					R.l = R.c;
+					Tick(4);
 					break;
 				case 0x6A:
+					R.l = R.d;
+					Tick(4);
 					break;
 				case 0x6B:
+					R.l = R.e;
+					Tick(4);
 					break;
 				case 0x6C:
+					R.l = R.h;
+					Tick(4);
 					break;
 				case 0x6D:
+					R.l = R.l;
+					Tick(4);
 					break;
 				case 0x6E:
+					R.l = M[R.hl];
+					Tick(4);
 					break;
 				case 0x6F:
+					R.l = R.a;
+					Tick(4);
 					break;
 				case 0x70:
+					M[R.hl] = R.b;
+					Tick(8);
 					break;
 				case 0x71:
+					M[R.hl] = R.c;
+					Tick(8);
 					break;
 				case 0x72:
+					M[R.hl] = R.d;
+					Tick(8);
 					break;
 				case 0x73:
+					M[R.hl] = R.e;
+					Tick(8);
 					break;
 				case 0x74:
+					M[R.hl] = R.h;
+					Tick(8);
 					break;
 				case 0x75:
+					M[R.hl] = R.l;
+					Tick(8);
 					break;
 				case 0x76:
 					HLT();
 					Tick(4);
 					break;
 				case 0x77:
+					M[R.hl] = R.a;
+					Tick(8);
 					break;
 				case 0x78:
+					R.a = R.b;
+					Tick(4);
 					break;
 				case 0x79:
+					R.a = R.c;
+					Tick(4);
 					break;
 				case 0x7A:
+					R.a = R.d;
+					Tick(4);
 					break;
 				case 0x7B:
+					R.a = R.e;
+					Tick(4);
 					break;
 				case 0x7C:
+					R.a = R.h;
+					Tick(4);
 					break;
 				case 0x7D:
+					R.a = R.l;
+					Tick(4);
 					break;
 				case 0x7E:
+					R.a = M[R.hl];
+					Tick(4);
 					break;
 				case 0x7F:
+					R.a = R.a;
+					Tick(4);
 					break;
 				case 0x80:
+					ADD_A_n(R.b);
+					Tick(4);
 					break;
 				case 0x81:
+					ADD_A_n(R.c);
+					Tick(4);
 					break;
 				case 0x82:
+					ADD_A_n(R.d);
+					Tick(4);
 					break;
 				case 0x83:
+					ADD_A_n(R.e);
+					Tick(4);
 					break;
 				case 0x84:
+					ADD_A_n(R.h);
+					Tick(4);
 					break;
 				case 0x85:
+					ADD_A_n(R.l);
+					Tick(4);
 					break;
 				case 0x86:
+					ADD_A_n(M[R.hl]);
+					Tick(8);
 					break;
 				case 0x87:
+					ADD_A_n(R.a);
+					Tick(4);
 					break;
 				case 0x88:
+					ADC_A_n(R.b);
+					Tick(4);
 					break;
 				case 0x89:
+					ADC_A_n(R.c);
+					Tick(4);
 					break;
 				case 0x8A:
+					ADC_A_n(R.d);
+					Tick(4);
 					break;
 				case 0x8B:
+					ADC_A_n(R.e);
+					Tick(4);
 					break;
 				case 0x8C:
+					ADC_A_n(R.h);
+					Tick(4);
 					break;
 				case 0x8D:
+					ADC_A_n(R.l);
+					Tick(4);
 					break;
 				case 0x8E:
+					ADC_A_n(M[R.hl]);
+					Tick(4);
 					break;
 				case 0x8F:
+					ADC_A_n(R.a);
+					Tick(4);
 					break;
 				case 0x90:
+					SUB_A_n(R.b);
+					Tick(4);
 					break;
 				case 0x91:
+					SUB_A_n(R.c);
+					Tick(4);
 					break;
 				case 0x92:
+					SUB_A_n(R.d);
+					Tick(4);
 					break;
 				case 0x93:
+					SUB_A_n(R.e);
+					Tick(4);
 					break;
 				case 0x94:
+					SUB_A_n(R.h);
+					Tick(4);
 					break;
 				case 0x95:
+					SUB_A_n(R.l);
+					Tick(4);
 					break;
 				case 0x96:
+					SUB_A_n(M[R.hl]);
+					Tick(8);
 					break;
 				case 0x97:
+					SUB_A_n(R.a);
+					Tick(4);
 					break;
 				case 0x98:
+					SBC_A_n(R.b);
+					Tick(4);
 					break;
 				case 0x99:
+					SBC_A_n(R.c);
+					Tick(4);
 					break;
 				case 0x9A:
+					SBC_A_n(R.d);
+					Tick(4);
 					break;
 				case 0x9B:
+					SBC_A_n(R.e);
+					Tick(4);
 					break;
 				case 0x9C:
+					SBC_A_n(R.h);
+					Tick(4);
 					break;
 				case 0x9D:
+					SBC_A_n(R.l);
+					Tick(4);
 					break;
 				case 0x9E:
+					SBC_A_n(M[R.hl]);
+					Tick(4);
 					break;
 				case 0x9F:
+					SBC_A_n(R.a);
+					Tick(4);
 					break;
 				case 0xA0:
+					AND_A_n(R.b);
+					Tick(4);
 					break;
 				case 0xA1:
+					AND_A_n(R.c);
+					Tick(4);
 					break;
 				case 0xA2:
+					AND_A_n(R.d);
+					Tick(4);
 					break;
 				case 0xA3:
+					AND_A_n(R.e);
+					Tick(4);
 					break;
 				case 0xA4:
+					AND_A_n(R.h);
+					Tick(4);
 					break;
 				case 0xA5:
+					AND_A_n(R.l);
+					Tick(4);
 					break;
 				case 0xA6:
+					AND_A_n(M[R.hl]);
+					Tick(8);
 					break;
 				case 0xA7:
+					AND_A_n(R.a);
+					Tick(4);
 					break;
 				case 0xA8:
+					XOR_A_n(R.b);
+					Tick(4);
 					break;
 				case 0xA9:
+					XOR_A_n(R.c);
+					Tick(4);
 					break;
 				case 0xAA:
+					XOR_A_n(R.d);
+					Tick(4);
 					break;
 				case 0xAB:
+					XOR_A_n(R.e);
+					Tick(4);
 					break;
 				case 0xAC:
+					XOR_A_n(R.h);
+					Tick(4);
 					break;
 				case 0xAD:
+					XOR_A_n(R.l);
+					Tick(4);
 					break;
 				case 0xAE:
+					XOR_A_n(M[R.hl]);
+					Tick(4);
 					break;
 				case 0xAF:
+					XOR_A_n(R.a);
+					Tick(4);
 					break;
 				case 0xB0:
+					OR_A_n(R.b);
+					Tick(4);
 					break;
 				case 0xB1:
+					OR_A_n(R.c);
+					Tick(4);
 					break;
 				case 0xB2:
+					OR_A_n(R.d);
+					Tick(4);
 					break;
 				case 0xB3:
+					OR_A_n(R.e);
+					Tick(4);
 					break;
 				case 0xB4:
+					OR_A_n(R.h);
+					Tick(4);
 					break;
 				case 0xB5:
+					OR_A_n(R.l);
+					Tick(4);
 					break;
 				case 0xB6:
+					OR_A_n(M[R.hl]);
+					Tick(8);
 					break;
 				case 0xB7:
+					OR_A_n(R.a);
+					Tick(4);
 					break;
 				case 0xB8:
+					CP_A_n(R.b);
+					Tick(4);
 					break;
 				case 0xB9:
+					CP_A_n(R.c);
+					Tick(4);
 					break;
 				case 0xBA:
+					CP_A_n(R.d);
+					Tick(4);
 					break;
 				case 0xBB:
+					CP_A_n(R.e);
+					Tick(4);
 					break;
 				case 0xBC:
+					CP_A_n(R.h);
+					Tick(4);
 					break;
 				case 0xBD:
+					CP_A_n(R.l);
+					Tick(4);
 					break;
 				case 0xBE:
+					CP_A_n(M[R.hl]);
+					Tick(4);
 					break;
 				case 0xBF:
+					CP_A_n(R.a);
+					Tick(4);
 					break;
 				case 0xC0:
+					RET_cond(!R.ZF);
+					Tick(8);
 					break;
 				case 0xC1:
+					POP(&rp->bc);
+					Tick(12);
 					break;
 				case 0xC2:
+					JP(Fetch16(), !R.ZF);
+					Tick(12);
 					break;
 				case 0xC3:
+					JP(Fetch16(), true);
+					Tick(12);
 					break;
 				case 0xC4:
+					CALL(!R.ZF);
+					Tick(12);
 					break;
 				case 0xC5:
+					PUSH(R.bc);
+					Tick(16);
 					break;
 				case 0xC6:
+					ADD_A_n(Fetch8());
+					Tick(8);
 					break;
 				case 0xC7:
+					RST(0x00);
+					Tick(16);
 					break;
 				case 0xC8:
+					RET_cond(R.ZF);
+					Tick(8);
 					break;
 				case 0xC9:
+					RET();
+					Tick(16);
 					break;
 				case 0xCA:
+					JP(Fetch16(), R.ZF);
+					Tick(12);
 					break;
 				case 0xCB:
+					CBExecute();
 					break;
 				case 0xCC:
+					CALL(R.ZF);
+					Tick(12);
 					break;
 				case 0xCD:
+					CALL(true);
+					Tick(12);
 					break;
 				case 0xCE:
+					ADC_A_n(Fetch8());
+					Tick(8);
 					break;
 				case 0xCF:
+					RST(0x08);
+					Tick(16);
 					break;
 				case 0xD0:
+					RET_cond(!R.CF);
+					Tick(8);
 					break;
 				case 0xD1:
+					POP(&rp->de);
+					Tick(12);
 					break;
 				case 0xD2:
-					break;
-				case 0xD3:
+					JP(Fetch16(), !R.CF);
+					Tick(12);
 					break;
 				case 0xD4:
+					CALL(!R.CF);
+					Tick(12);
 					break;
 				case 0xD5:
+					PUSH(R.de);
+					Tick(16);
 					break;
 				case 0xD6:
+					SUB_A_n(Fetch8());
+					Tick(8);
 					break;
 				case 0xD7:
+					RST(0x10);
+					Tick(16);
 					break;
 				case 0xD8:
+					RET_cond(R.CF);
+					Tick(8);
 					break;
 				case 0xD9:
+					RET();
+					cpuInterruptEnable = true;
+					Tick(16);
 					break;
 				case 0xDA:
-					break;
-				case 0xDB:
+					JP(Fetch16(), R.CF);
+					Tick(12);
 					break;
 				case 0xDC:
-					break;
-				case 0xDD:
+					CALL(R.CF);
+					Tick(12);
 					break;
 				case 0xDE:
+					SBC_A_n(Fetch8());
+					Tick(8);
 					break;
 				case 0xDF:
+					RST(0x18);
+					Tick(16);
 					break;
 				case 0xE0:
+					M[(ushort)(Fetch8() + 0xFF00)] = R.a;
+					Tick(12);
 					break;
 				case 0xE1:
+					POP(&rp->hl);
+					Tick(12);
 					break;
 				case 0xE2:
-					break;
-				case 0xE3:
-					break;
-				case 0xE4:
+					M[(ushort)(R.c + 0xFF00)] = R.a;
+					Tick(8);
 					break;
 				case 0xE5:
+					PUSH(R.hl);
+					Tick(16);
 					break;
 				case 0xE6:
+					AND_A_n(Fetch8());
+					Tick(8);
 					break;
 				case 0xE7:
+					RST(0x20);
+					Tick(16);
 					break;
 				case 0xE8:
+					ADD_SP_n(Fetch8());
+					Tick(16);
 					break;
 				case 0xE9:
+					JP(M[R.hl], true);
+					//no tick; ticks 4 in jp.
+					//FIXME: 8bit data?
 					break;
 				case 0xEA:
-					break;
-				case 0xEB:
-					break;
-				case 0xEC:
-					break;
-				case 0xED:
+					M[Fetch16()] = R.a;
+					Tick(16);
 					break;
 				case 0xEE:
+					XOR_A_n(Fetch8());
+					Tick(8);
 					break;
 				case 0xEF:
+					RST(0x28);
+					Tick(16);
 					break;
 				case 0xF0:
+					R.a = M[(ushort)(0xFF00 + Fetch8())];
+					Tick(12);
 					break;
 				case 0xF1:
+					POP(&rp->af);
+					R.UpdateFlagsFromAF();
+					Tick(12);
 					break;
 				case 0xF2:
+					R.a = M[(ushort)(R.c + 0xFF00)];
+					Tick(8);
 					break;
 				case 0xF3:
-					break;
-				case 0xF4:
+					cpuInterruptEnable = false;
+					Tick(4);
 					break;
 				case 0xF5:
+					R.UpdateAFFromFlags();
+					PUSH(R.af);
+					Tick(16);
 					break;
 				case 0xF6:
+					OR_A_n(Fetch8());
+					Tick(8);
 					break;
 				case 0xF7:
+					RST(0x30);
+					Tick(16);
 					break;
 				case 0xF8:
+					LD_hl_sp_imm();
+					Tick(12);
 					break;
 				case 0xF9:
+					R.hl = R.sp;
+					Tick(8);
 					break;
 				case 0xFA:
+					R.a = M[Fetch16()];
+					Tick(16);
 					break;
 				case 0xFB:
-					break;
-				case 0xFC:
-					break;
-				case 0xFD:
+					cpuInterruptEnable = true;
+					Tick(4);
 					break;
 				case 0xFE:
+					CP_A_n(Fetch8());
+					Tick(8);
 					break;
 				case 0xFF:
+					RST(0x38);
+					Tick(16);
 					break;
 				default:
-					throw new Exception("Unsupported opcode 0x" + opFirst.ToString("x"));
+					throw new Exception("invalid opcode 0x" + opFirst.ToString("x"));
 				} 
 			}
 		}
@@ -734,6 +1011,8 @@ namespace HappyGB.Core
 		public void CBExecute()
 		{
 			byte opCB = Fetch8();
+
+			throw new NotImplementedException();
 			switch (opCB) 
 			{
 			case 0x00:

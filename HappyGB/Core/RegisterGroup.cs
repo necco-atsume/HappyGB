@@ -25,21 +25,21 @@ namespace HappyGB.Core
 		[FieldOffset(10)]
 		public ushort pc;
 
-		[FieldOffset(0)]
-		public byte a;
 		[FieldOffset(1)]
+		public byte a;
+		[FieldOffset(0)]
 		public byte _f; //Don't use me.
-		[FieldOffset(2)]
-		public byte b;
 		[FieldOffset(3)]
+		public byte b;
+		[FieldOffset(2)]
 		public byte c;
-		[FieldOffset(4)]
-		public byte d;
 		[FieldOffset(5)]
+		public byte d;
+		[FieldOffset(4)]
 		public byte e;
-		[FieldOffset(6)]
-		public byte h;
 		[FieldOffset(7)]
+		public byte h;
+		[FieldOffset(6)]
 		public byte l;
 
 		[FieldOffset(12)]
@@ -88,6 +88,12 @@ namespace HappyGB.Core
 				_f |= 0x20;
 			if(CF)
 				_f |= 0x10;
+		}
+
+		public override string ToString()
+		{
+			return string.Format("[a:{0:X2} b:{1:X2} c:{2:X2} d:{3:X2} e:{4:X2} h:{5:X2} l:{6:X2}] [pc:{7:X4} sp:{8:X4}] [flags:{9:X2} hl: {10:X4}]\n",
+				a, b, c, d, e, h, l, pc, sp, _f, hl );
 		}
 	}
 }

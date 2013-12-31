@@ -64,7 +64,6 @@
     <Compile Include="Core\CartReader.cs" />
     <Compile Include="Core\CartHeader.cs" />
     <Compile Include="Core\GraphicsController.cs" />
-    <Compile Include="Core\IOController.cs" />
     <Compile Include="Core\ScreenSurface.cs" />
     <Compile Include="ISurface.cs" />
     <Compile Include="Core\SurfaceBlitter.cs" />

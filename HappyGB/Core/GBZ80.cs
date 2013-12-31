@@ -34,8 +34,21 @@ namespace HappyGB.Core
 			R.pc = 0x0100;
 
 			cpuInterruptEnable = true;
-			//TODO: Set MemoryMapped Registers.
-			M[0xFFFF] = 0x00;
+
+			//Timers.
+			M[0xFF05] = M[0xFF06] = M[0xFF07] = 0x00; 
+
+			//TODO: Sound
+
+			//Graphics.
+			M[0xFF40] = 0x91; //LCDC
+			M[0xFF42] = M[0xFF43] = M[0xFF45] = 0x00;  //scx scy lyc
+			M[0xFF47] = 0xFC; //Palettes.
+			M[0xFF48] = 0xFF;
+			M[0xFF49] = 0xFF;
+			M[0xFF4A] = M[0xFF4B] = 0x00; //wx wy
+
+			M[0xFFFF] = 0x00; //IE
 		}
 
 		public void Run(GraphicsController graphics, InterruptScheduler interrupts)
@@ -55,51 +68,55 @@ namespace HappyGB.Core
 					if (mf.HasFlag(InterruptType.VBlank))
 					{
 						//Handle VBlank
-						M.IF &= (0xFF - (byte)InterruptType.VBlank); //Unset in IF.
-						cpuInterruptEnable = false; //Unset master interrupt.
-
-						//Now push the PC
-						//and jump to the interrupt vector.
-
-						throw new NotImplementedException();
+						HandleInterrupt(InterruptType.VBlank);
+						Run(graphics, interrupts);
+						return;
 					}
 					if (mf.HasFlag(InterruptType.LCDController))
 					{
 						//Handle LCDC stat 
-						throw new NotImplementedException();
+						HandleInterrupt(InterruptType.LCDController);
+						Run(graphics, interrupts);
+						return;
 					}
 					if (mf.HasFlag(InterruptType.TimerOverflow))
 					{
 						//Handle timer 
-						throw new NotImplementedException();
+						HandleInterrupt(InterruptType.TimerOverflow);
+						Run(graphics, interrupts);
+						return;
 					}
 					if (mf.HasFlag(InterruptType.SerialComplete))
 					{
-						//Handle serial 
-						throw new NotImplementedException();
+						HandleInterrupt(InterruptType.SerialComplete);
+						Run(graphics, interrupts);
+						return;
 					}
 					if (mf.HasFlag(InterruptType.ButtonPress))
 					{
 						//Handle bpress 
-						throw new NotImplementedException();
+						HandleInterrupt(InterruptType.ButtonPress);
+						Run(graphics, interrupts);
+						return;
 					}
 				}
 
 				startTicks = localTickCount;
-
 				if (halted)
 					Tick(4);
 				else
 					Execute(); //Run one instruction.
 
 				//Update the lcd controller.
-				//FIXME: Priorities are donked up.
-				lcdInterrupt = graphics.Update((int)(localTickCount - startTicks));
+				int instructionTicks = (int)(localTickCount - startTicks);
+				lcdInterrupt = graphics.Update(instructionTicks);
 				M.IF |= (byte)lcdInterrupt;
 
 				//Handle interrupts in priority order.
+				M.IF |= (byte)interrupts.Tick(instructionTicks);
 
-				//handle timer and pin io.
+				//TODO: Pin io.
+				//System.Diagnostics.Debug.WriteLine("[" + localTickCount + "] " + R.ToString());
 			}
 		}
 
@@ -122,6 +139,31 @@ namespace HappyGB.Core
 			ushort ret = M.Read16(R.pc);
 			R.pc += 2;
 			return ret;
+		}
+
+		public void HandleInterrupt(InterruptType interrupt)
+		{
+			M.IF &= (byte)(0xFF - (byte)interrupt); //Unset in IF.
+			cpuInterruptEnable = false; //Unset master interrupt.
+			switch (interrupt)
+			{
+			case InterruptType.VBlank:
+				RST(0x40);
+				break;
+			case InterruptType.LCDController:
+				RST(0x48);
+				break;
+			case InterruptType.TimerOverflow:
+				RST(0x50);
+				break;
+			case InterruptType.SerialComplete:
+				RST(0x58);
+				break;
+			case InterruptType.ButtonPress:
+				RST(0x60);
+				break;
+			}
+			Tick(12);
 		}
 
 	}

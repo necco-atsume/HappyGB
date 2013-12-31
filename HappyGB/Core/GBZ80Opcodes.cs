@@ -30,6 +30,21 @@ namespace HappyGB.Core
 			R.sp = R.hl;
 		}
 
+		public void LD_hl_sp_imm()
+		{
+			byte r = Fetch8();
+			if (((r + (R.sp & 0x000F)) & 0x10) == 0x10)
+				R.HCF = true;
+			else R.HCF = false;
+			if (((r + (R.sp & 0x00FF)) & 0x100) == 0x100)
+				R.CF = true;
+			else R.CF = false;
+			sbyte sr = unchecked((sbyte)r);
+			int sp = R.sp;
+			sp += sr;
+			R.sp = (ushort)sp;
+		}
+
 		public void PUSH(ushort reg)
 		{
 			R.sp -= 2;
@@ -45,10 +60,8 @@ namespace HappyGB.Core
 		#endregion
 
 		#region ALU 8bit
-		public void ADD_A_n(byte* n)
+		public void ADD_A_n(byte nv)
 		{
-			byte nv = *n;
-
 			R.HCF = (((R.a & 0x0F) + (nv & 0x0F)) & 0x100) == 0x100;
 
 			R.NF = false;
@@ -57,24 +70,23 @@ namespace HappyGB.Core
 			if((res & 0x100) == 0x100)
 				R.CF = true;
 
-			if(*n == 0)
+			if(nv == 0)
 				R.ZF = true;
 
 			R.a = (byte)(0xFF & res);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void ADC_A_n(byte* n)
+		public void ADC_A_n(byte nc)
 		{
-			byte nc = *n;
+			//FIXME: Accurate???
 			if(R.CF)
 				nc++;
-			ADD_A_n(&nc);
+			ADD_A_n(nc);
 		}
 
-		public void SUB_A_n(byte* n)
+		public void SUB_A_n(byte nv)
 		{
-			byte nv = *n;
 
 			///FIXME: Prolly slow. find some crazy bitwise stupid shit to doi inst.
 			///FIXME: Is this correct too? if a > b we dont need to borrow in a-b.
@@ -90,20 +102,19 @@ namespace HappyGB.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void SBC_A_n(byte* n)
+		public void SBC_A_n(byte nc)
 		{
-			byte nc = *n;
 			if(R.CF)
 				nc--;
-			SUB_A_n(&nc);
+			SUB_A_n(nc);
 		}
 
-		public void AND_A_n(byte* n)
+		public void AND_A_n(byte n)
 		{
 			R.NF = R.CF = false;
 			R.HCF = true;
 
-			R.a = (byte)(R.a & (*n));
+			R.a = (byte)(R.a & n);
 
 			if(R.a == 0)
 				R.ZF = true;
@@ -111,10 +122,10 @@ namespace HappyGB.Core
 				R.ZF = false;
 		}
 
-		public void OR_A_n(byte* n)
+		public void OR_A_n(byte n)
 		{
 			R.NF = R.CF = R.HCF = false;
-			R.a = (byte)(R.a | (*n));
+			R.a = (byte)(R.a | n);
 
 			if(R.a == 0)
 				R.ZF = true;
@@ -122,10 +133,10 @@ namespace HappyGB.Core
 				R.ZF = false;
 		}
 
-		public void XOR_A_n(byte* n)
+		public void XOR_A_n(byte n)
 		{
 			R.NF = R.CF = R.HCF = false;
-			R.a = (byte)(R.a ^ (*n));
+			R.a = (byte)(R.a ^ n);
 
 			if(R.a == 0)
 				R.ZF = true;
@@ -135,7 +146,7 @@ namespace HappyGB.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void CP_A_n(byte *n)
+		public void CP_A_n(byte n)
 		{
 			//TODO: If we need to we can optimize this.
 			byte a = R.a;
