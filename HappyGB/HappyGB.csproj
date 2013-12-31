@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{61A9EA29-1EF7-4C15-9B9B-B77F8C6B6285}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>HappyGB</RootNamespace>
+    <AssemblyName>HappyGB</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <StartupObject>HappyGB.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="app.desktop">
+      <DeployService-TargetDirectoryId>Linux.DesktopApplications</DeployService-TargetDirectoryId>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Core\" />
+    <Folder Include="UI\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Core\GBZ80.cs" />
+    <Compile Include="Core\RegisterGroup.cs" />
+    <Compile Include="Core\MemoryMap.cs" />
+    <Compile Include="Core\GBZ80Opcodes.cs" />
+    <Compile Include="Core\IMemoryBankController.cs" />
+    <Compile Include="Core\GBZ80OpcodeTable.cs" />
+    <Compile Include="Core\Gameboy.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Core\NoMBC.cs" />
+    <Compile Include="Core\CartReader.cs" />
+    <Compile Include="Core\CartHeader.cs" />
+    <Compile Include="Core\GraphicsController.cs" />
+    <Compile Include="Core\IOController.cs" />
+    <Compile Include="Core\ScreenSurface.cs" />
+    <Compile Include="ISurface.cs" />
+    <Compile Include="Core\SurfaceBlitter.cs" />
+    <Compile Include="Core\InterruptScheduler.cs" />
+    <Compile Include="Core\InterruptType.cs" />
+    <Compile Include="Core\GbPalette.cs" />
+    <Compile Include="Core\GbColorMonochrome.cs" />
+    <Compile Include="UI\MainWindow.cs" />
+    <Compile Include="UI\GameboyControl.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Tetris.gb">
+      <DependentUpon>Program.cs</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <DotNetNamingPolicy DirectoryNamespaceAssociation="PrefixedFlat" ResourceNamePolicy="MSBuild" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+</Project>
