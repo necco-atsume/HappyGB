@@ -1,15 +1,23 @@
 using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace HappyGB.Core
 {
 	public class ScreenSurface
 		: ISurface
 	{
-		private Image front, back;
+		private Bitmap front, back;
 
 		public ScreenSurface()
 		{
+
+		}
+
+		public void Initialize()
+		{
+			front = new Bitmap(160, 144);
+			back = new Bitmap(160, 144);
 		}
 
 		#region IGraphicsAdapter implementation

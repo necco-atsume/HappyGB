@@ -69,34 +69,34 @@ namespace HappyGB.Core
 					{
 						//Handle VBlank
 						HandleInterrupt(InterruptType.VBlank);
-						Run(graphics, interrupts);
+						//Run(graphics, interrupts);
 						return;
 					}
 					if (mf.HasFlag(InterruptType.LCDController))
 					{
 						//Handle LCDC stat 
 						HandleInterrupt(InterruptType.LCDController);
-						Run(graphics, interrupts);
+						//Run(graphics, interrupts);
 						return;
 					}
 					if (mf.HasFlag(InterruptType.TimerOverflow))
 					{
 						//Handle timer 
 						HandleInterrupt(InterruptType.TimerOverflow);
-						Run(graphics, interrupts);
+						//Run(graphics, interrupts);
 						return;
 					}
 					if (mf.HasFlag(InterruptType.SerialComplete))
 					{
 						HandleInterrupt(InterruptType.SerialComplete);
-						Run(graphics, interrupts);
+						//Run(graphics, interrupts);
 						return;
 					}
 					if (mf.HasFlag(InterruptType.ButtonPress))
 					{
 						//Handle bpress 
 						HandleInterrupt(InterruptType.ButtonPress);
-						Run(graphics, interrupts);
+						//Run(graphics, interrupts);
 						return;
 					}
 				}

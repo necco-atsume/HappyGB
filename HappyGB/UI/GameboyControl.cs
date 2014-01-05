@@ -31,6 +31,13 @@ namespace HappyGB.UI
 			this.Invalidate();
 		}
 
+		protected override void OnCreateControl()
+		{
+			System.Diagnostics.Debug.WriteLine("Init'd");
+			gb.GetSurface().Initialize();
+			base.OnCreateControl();
+		}
+
 		protected override void OnPaint(PaintEventArgs e)
 		{
 			gb.RunOneFrame();

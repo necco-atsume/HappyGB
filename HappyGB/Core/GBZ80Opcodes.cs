@@ -182,7 +182,16 @@ namespace HappyGB.Core
 
 		public void DAA()
 		{
-			throw new NotImplementedException("errrrrr DAA sounds like effort.");
+			if ((R.a & 0x0F) > 0x09)
+			{
+				R.HCF = true;
+				R.a += 0x06;
+			}
+			if (R.CF || ((R.a & 0xF0) > 0x90))
+			{
+				R.CF = true;
+				R.a += 0x60;
+			}
 		}
 
 		public void CPL()

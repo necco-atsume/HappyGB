@@ -1,4 +1,6 @@
 using System;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace HappyGB.Core
 {
@@ -9,6 +11,7 @@ namespace HappyGB.Core
 		private const int SCANLINE_INTERVAL = 456;
 		private byte[] vram;
 		private byte[] oam;
+		private BitmapData backBuffer;
 
 		private int scanline;
 		private int clock;
@@ -21,6 +24,8 @@ namespace HappyGB.Core
 		}
 
 		private LCDState state;
+
+		private GbPalette obp0, obp1, bg;
 
 		private ISurface buffer;
 		private SurfaceBlitter blitter;
@@ -70,20 +75,21 @@ namespace HappyGB.Core
 		//Palettes: Update the SurfaceBlitter.
 		public byte BGP 
 		{
-			get;
-			set;
+			get { return bg.RegisterValue; }
+			set { bg.RegisterValue = value; }
 		}
 
 		public byte OBP0 
 		{
-			get;
-			set;
+			get { return obp0.RegisterValue; }
+			set { obp0.RegisterValue = value; }
+
 		}
 
 		public byte OBP1 
 		{
-			get;
-			set;
+			get { return obp1.RegisterValue; }
+			set { obp1.RegisterValue = value; }
 		}
 
 		public byte WY 
@@ -106,7 +112,11 @@ namespace HappyGB.Core
 			lcdcHblank = lcdcOAM = lcdcScanline = lcdcVblank = false;
 			blitter = new SurfaceBlitter();
 			vram = new byte[0x2000];
-			oam = new byte[0x9F];
+			oam = new byte[0xA0];
+
+			bg = new GbPalette(false);
+			obp0 = new GbPalette(true);
+			obp1 = new GbPalette(true);
 		}
 
 		/// <summary>
@@ -130,8 +140,7 @@ namespace HappyGB.Core
 				scanline = (144 + (clock % SCANLINE_INTERVAL));
 				if (clock == ticks) //since we just booped the counter.
 				{
-					//TODO: Fire off a VBlank interrupt.
-					if (lcdcVblank)
+					if (lcdcVblank) //FIXME: we can't have two interupts @ the same time right?
 						return InterruptType.VBlank | InterruptType.LCDController;
 					else return InterruptType.VBlank; //This should work???
 				}
@@ -193,23 +202,100 @@ namespace HappyGB.Core
 		public void WriteVRAM8(ushort address, byte value)
 		{
 			vram[address - 0x8000] = value;
-			if (address < 0x9800)
-			{
-				throw new NotImplementedException();
-				//blitter.updatetile();
-			}
 		}
 
 		/// <summary>
 		/// Writes one full scanline to the back buffer.
 		/// </summary>
-		private void WriteScanline()
+		private unsafe void WriteScanline()
 		{
+			var bmp = Surface.BackBuffer as Bitmap;
+			BitmapData bitmapData;
+
+			bitmapData = bmp.LockBits(new Rectangle(Point.Empty, bmp.Size),
+				ImageLockMode.WriteOnly,
+				PixelFormat.Canonical);
+
+			int* scan0 = (int*)bitmapData.Scan0;
+
 			for (int x = 0; x < 160; x += 8) 
 			{
+				ushort backAddrBase = ((LCDC & 0x80) == 0x80) ? (ushort)0x9C00 : (ushort)0x9800;
+				ushort windAddrBase = ((LCDC & 0x40) == 0x40) ? (ushort)0x9C00 : (ushort)0x9800;
+				ushort tileDataBase = ((LCDC & 0x10) == 0x10) ? (ushort)0x8000 : (ushort)0x8800;
+				bool signedTileData = backAddrBase == 0x8000;
+
+				bool windowEnabled = ((LCDC & 0x20) == 0x20);
+
 				//get the tile at the x,y.
-				//get the offset
-				//draw that tile
+				//Do BG first.
+				int bTileRow = ((SCY + scanline) & 0xFF) / 32;
+				int bTileCol = ((SCX + x) & 0xFF) / 32;
+				ushort tileOffset = (ushort) (backAddrBase + (bTileRow * 32) + bTileCol);
+
+				ushort dataOffsetAddr = 0;
+				if (!signedTileData)
+				{
+					byte tileNumber = ReadVRAM8(tileOffset);
+					dataOffsetAddr = (ushort)(tileDataBase + tileNumber);
+				}
+				else
+				{
+					sbyte tileNumber = unchecked((sbyte)ReadVRAM8(tileOffset));
+					dataOffsetAddr = (ushort)(tileDataBase + tileNumber);
+				}
+
+				//Add scanline to tile offset so we get the correct tile scanline.
+				dataOffsetAddr += (ushort)(((scanline + SCY) % 8) * 2);
+
+				byte tileHi = ReadVRAM8(dataOffsetAddr);
+				byte tileLo = ReadVRAM8((ushort)(dataOffsetAddr + 1));
+
+				//draw that tile to the buffer.
+				DrawTileScan(scan0, bg, tileHi, tileLo, x - (SCX % 8), scanline);
+
+				//Now draw window
+
+				//now draw sprites.
+			}
+
+			bmp.UnlockBits(bitmapData);
+		}
+
+		private unsafe void DrawTileScan(int* scan0, GbPalette pal, byte tileHigh, byte tileLow, int x, int y)
+		{
+			//Put both in the same int so we only have to shift once per thing.
+			int bit = (tileHigh << 8) + tileLow;
+
+			byte* abs = (byte*) scan0;
+			abs += (sizeof(int) * y * 160);
+			abs += (sizeof(int) * x);
+
+			//Draw 8 pixels.
+			for (int b = 0; b < 8; b++)
+			{
+				//Don't draw off the screen.
+				if (x + b < 0) continue;
+				if (x + b > 160) continue;
+
+				//Get the color from the tile's data.
+				byte paletteColor = 0;
+				if ((bit & 0x01) == 0x01)
+					paletteColor |= 0x01;
+				if ((bit & 0x10) == 0x10)
+					paletteColor |= 0x02;
+
+				Color c = pal.GetColor(paletteColor);
+
+				//Draw to the thing.
+				//We're going to assume it's RGBA, to make things easier.
+				abs[0] = c.R;
+				abs[1] = c.G;
+				abs[2] = c.B;
+				abs[3] = c.A;
+
+				abs += sizeof(int);
+				bit = bit >> 2;
 			}
 		}
 	}

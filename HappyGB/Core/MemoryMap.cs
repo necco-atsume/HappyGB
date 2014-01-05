@@ -34,15 +34,17 @@ namespace HappyGB.Core
 				if (addr < 0x8000)
 					return cart.Read8(addr); //Cart
 				else if (addr < 0xA000)
-					throw new NotImplementedException(); //vRam
+					return gfx.ReadVRAM8(addr);
 				else if (addr < 0xC000)
 					return cart.Read8(addr);
 				else if (addr < 0xE000)
 					return internalRam[addr - 0xC000];
 				else if (addr < 0xFE00)
 					return internalRam[addr - 0xE000];
-				else if (addr < 0xFEFF)
+				else if (addr < 0xFEA0)
 					return gfx.ReadOAM8(addr); //FIXME: Dead zone is mapped to OAM.
+				else if (addr < 0xFEFF)
+					return 0;
 				else 
 				{
 					//IO and HighRam.
@@ -106,8 +108,11 @@ namespace HappyGB.Core
 					internalRam[addr - 0xC000] = value;
 				else if (addr < 0xFE00)
 					internalRam[addr - 0xE000] = value;
-				else if (addr < 0xFEFF)
+				else if (addr < 0xFEA0)
 					gfx.WriteOAM8(addr, value);
+				else if (addr < 0xFEFF)
+					//System.Diagnostics.Debug.WriteLine("Writing to junk address." + addr.ToString("X"));
+				{}
 				else 
 				{
 					//IO and HighRam.

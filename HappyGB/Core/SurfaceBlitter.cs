@@ -17,24 +17,14 @@ namespace HappyGB.Core
 			OBP1
 		}
 
-		//Setters update their respective tile pixbufs.
-
 		public SurfaceBlitter()
 		{
 
 		}
 
-		public void DrawTileScan(Image surface, int tile, int x, int scan, int palette) 
+		public void DrawTileScan(Graphics g, byte tileLow, byte tileHigh, int x, int y, GbPalette palette) 
 		{ 
 			throw new NotImplementedException();
-		}
-
-		public void UpdateTile() {} //TODO: Args. Copy to each tile cache.
-		public void UpdateAllTiles() { }
-
-		private void UpdateTileCache()
-		{
-
 		}
 
 	}

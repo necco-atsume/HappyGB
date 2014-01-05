@@ -15,6 +15,7 @@ namespace HappyGB
 			get;
 		}
 
+		void Initialize();
 		void FlipBuffers();
 	}
 }

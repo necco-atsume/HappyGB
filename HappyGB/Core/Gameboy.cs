@@ -32,7 +32,7 @@ namespace HappyGB.Core
 			cpu.Run(gfx, timer);
 		}
 
-		public ISurface GetSurface()
+		public ISurface GetSurface() //FIXME: Should be property.
 		{
 			return gfx.Surface;
 		}
