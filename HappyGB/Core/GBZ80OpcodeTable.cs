@@ -49,8 +49,8 @@ namespace HappyGB.Core
 					Tick(20);
 					break;
 				case 0x09:
-					R.imm16 = M.Read16(R.bc);
-					ADD_HL_rr(R.imm16);
+					ushort imm = M.Read16(R.bc);
+					ADD_HL_rr(imm);
 					Tick(8);
 					break;
 				case 0x0A:

@@ -1,49 +1,48 @@
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
+
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace HappyGB.Core
 {
 	public class ScreenSurface
 		: ISurface
 	{
-		private Bitmap front, back;
+		private Color[] buffer;
+		private Texture2D texture;
 
 		public ScreenSurface()
 		{
-
+			buffer = new Color[160 * 144]; 
 		}
 
-		public void Initialize()
+		#region ISurface implementation
+
+		public void Initialize(GraphicsDevice graphics)
 		{
-			front = new Bitmap(160, 144);
-			back = new Bitmap(160, 144);
+			texture = new Texture2D(graphics, 160, 144, false, SurfaceFormat.Color);
 		}
 
-		#region IGraphicsAdapter implementation
-
-		public void FlipBuffers()
-		{
-			var tmp = front;
-			front = back;
-			back = tmp;
-		}
-
-		public Image FrontBuffer {
+		//write to dis
+		public Color[] Buffer {
 			get {
-				return front;
+				return buffer;
 			}
 		}
 
-		public Image BackBuffer {
+		//get stuff from dis
+		public Texture2D Surface {
 			get {
-				return back;
+				UpdateSurface(); //FIXME: Side effect when getting property: OK?
+				return texture;
 			}
 		}
-
 		#endregion
 
-
+		private void UpdateSurface()
+		{
+			texture.SetData<Color>(buffer);
+		}
 	}
 }
 

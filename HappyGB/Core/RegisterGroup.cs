@@ -58,6 +58,7 @@ namespace HappyGB.Core
 		//ADD_a_n(*ind);
 		//M[R.hl] = R.ind8;
 
+		//TODO: GEt rid of this.
 		[FieldOffset(16)]
 		public ushort ind16;
 		[FieldOffset(16)]

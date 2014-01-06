@@ -1,6 +1,6 @@
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace HappyGB.Core
 {
@@ -11,7 +11,6 @@ namespace HappyGB.Core
 		private const int SCANLINE_INTERVAL = 456;
 		private byte[] vram;
 		private byte[] oam;
-		private BitmapData backBuffer;
 
 		private int scanline;
 		private int clock;
@@ -162,15 +161,17 @@ namespace HappyGB.Core
 			case LCDState.LCDCopy:
 				if(clock > 169)
 				{
-					clock = 0;
-					WriteScanline();
-					scanline++;
-					state = LCDState.HBlank;
-
-					if (scanline == 144)
+					if (scanline >= 144)
 					{
-						state = LCDState.VBlank;
+						state = LCDState.VBlank; 
 						clock = 0;
+					}
+					else
+					{
+						clock = 0;
+						WriteScanline();
+						scanline++;
+						state = LCDState.HBlank;
 					}
 
 					if (LY == LYC) {
@@ -209,15 +210,6 @@ namespace HappyGB.Core
 		/// </summary>
 		private unsafe void WriteScanline()
 		{
-			var bmp = Surface.BackBuffer as Bitmap;
-			BitmapData bitmapData;
-
-			bitmapData = bmp.LockBits(new Rectangle(Point.Empty, bmp.Size),
-				ImageLockMode.WriteOnly,
-				PixelFormat.Canonical);
-
-			int* scan0 = (int*)bitmapData.Scan0;
-
 			for (int x = 0; x < 160; x += 8) 
 			{
 				ushort backAddrBase = ((LCDC & 0x80) == 0x80) ? (ushort)0x9C00 : (ushort)0x9800;
@@ -252,24 +244,19 @@ namespace HappyGB.Core
 				byte tileLo = ReadVRAM8((ushort)(dataOffsetAddr + 1));
 
 				//draw that tile to the buffer.
-				DrawTileScan(scan0, bg, tileHi, tileLo, x - (SCX % 8), scanline);
-
+				DrawTileScan(bg, tileHi, tileLo, x - (SCX % 8), scanline);
 				//Now draw window
 
 				//now draw sprites.
 			}
-
-			bmp.UnlockBits(bitmapData);
 		}
 
-		private unsafe void DrawTileScan(int* scan0, GbPalette pal, byte tileHigh, byte tileLow, int x, int y)
+		private unsafe void DrawTileScan(GbPalette pal, byte tileHigh, byte tileLow, int x, int y)
 		{
 			//Put both in the same int so we only have to shift once per thing.
 			int bit = (tileHigh << 8) + tileLow;
 
-			byte* abs = (byte*) scan0;
-			abs += (sizeof(int) * y * 160);
-			abs += (sizeof(int) * x);
+			int absOffset = ((y - SCY) * 160) + x;
 
 			//Draw 8 pixels.
 			for (int b = 0; b < 8; b++)
@@ -288,13 +275,9 @@ namespace HappyGB.Core
 				Color c = pal.GetColor(paletteColor);
 
 				//Draw to the thing.
-				//We're going to assume it's RGBA, to make things easier.
-				abs[0] = c.R;
-				abs[1] = c.G;
-				abs[2] = c.B;
-				abs[3] = c.A;
+				Surface.Buffer[absOffset] = c;
+				absOffset++;
 
-				abs += sizeof(int);
 				bit = bit >> 2;
 			}
 		}

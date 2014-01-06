@@ -143,6 +143,7 @@ namespace HappyGB.Core
 
 		public void HandleInterrupt(InterruptType interrupt)
 		{
+			//System.Diagnostics.Debug.WriteLine(interrupt.ToString());
 			M.IF &= (byte)(0xFF - (byte)interrupt); //Unset in IF.
 			cpuInterruptEnable = false; //Unset master interrupt.
 			switch (interrupt)

@@ -1,22 +1,22 @@
 using System;
-using System.Drawing;
+
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace HappyGB
 {
 	public interface ISurface
 	{
-		Image FrontBuffer 
+		Color[] Buffer
 		{
 			get;
 		}
 
-		Image BackBuffer 
-		{
+		Texture2D Surface {
 			get;
 		}
 
-		void Initialize();
-		void FlipBuffers();
+		void Initialize(GraphicsDevice graphics);
 	}
 }
 

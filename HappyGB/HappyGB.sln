@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HappyGB", "HappyGB.csproj", "{61A9EA29-1EF7-4C15-9B9B-B77F8C6B6285}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HappyGBTests", "HappyGBTests\HappyGBTests.csproj", "{686929DB-58A1-4CB1-8692-6A7B213500C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -13,6 +15,10 @@ Global
 		{61A9EA29-1EF7-4C15-9B9B-B77F8C6B6285}.Debug|x86.Build.0 = Debug|x86
 		{61A9EA29-1EF7-4C15-9B9B-B77F8C6B6285}.Release|x86.ActiveCfg = Release|x86
 		{61A9EA29-1EF7-4C15-9B9B-B77F8C6B6285}.Release|x86.Build.0 = Release|x86
+		{686929DB-58A1-4CB1-8692-6A7B213500C5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{686929DB-58A1-4CB1-8692-6A7B213500C5}.Debug|x86.Build.0 = Debug|Any CPU
+		{686929DB-58A1-4CB1-8692-6A7B213500C5}.Release|x86.ActiveCfg = Release|Any CPU
+		{686929DB-58A1-4CB1-8692-6A7B213500C5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = HappyGB.csproj

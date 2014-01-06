@@ -154,6 +154,9 @@ namespace HappyGB.Core
 					case 0x45:
 						gfx.LYC = value;
 						break;
+					case 0x46:
+						DMA = value;
+						break;
 					case 0x47:
 						gfx.BGP = value;
 						break;
@@ -205,8 +208,8 @@ namespace HappyGB.Core
 		{
 			//FIXME: Endianness right?
 			ushort ret = 0;
-			ushort vl = (ushort)this[addr];
-			ushort vr = (ushort)(this[(ushort)(addr + 1)] << 8);
+			ushort vr = (ushort)this[(ushort)(addr)];
+			ushort vl = (ushort)(this[(ushort)(addr + 1)] << 8);
 			ret = (ushort)(vl | vr);
 			return ret;
 		}
