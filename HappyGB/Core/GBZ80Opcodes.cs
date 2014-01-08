@@ -53,7 +53,7 @@ namespace HappyGB.Core
 
         public void POP(ushort* reg)
         {
-            *reg = M[R.sp];
+            *reg = M.Read16(R.sp);
             R.sp += 2;
         }
 
@@ -254,13 +254,14 @@ namespace HappyGB.Core
         public void RL(byte* n)
         {
             bool oldCarry = R.CF;
+            R.NF = R.HCF = false;
             R.CF = (*n & 0x80) == 0x80;
             byte nv = (byte)(*n << 1);
             if (oldCarry)
-                nv++; //lsb is always 0.
+                nv = (byte)(nv | 0x01);
+            if (nv == 0)
+                R.ZF = true;
             *n = nv;
-            R.NF = R.HCF = false;
-            R.ZF = *n == 0;
         }
 
         public void RRC(byte* n)
