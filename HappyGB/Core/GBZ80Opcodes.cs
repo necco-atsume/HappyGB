@@ -54,7 +54,7 @@ namespace HappyGB.Core
         public void POP(ushort* reg)
         {
             *reg = M[R.sp];
-            R.sp -= 2;
+            R.sp += 2;
         }
 
         #endregion
