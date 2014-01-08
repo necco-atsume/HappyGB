@@ -2,5 +2,6 @@ obj/*
 bin/*
 
 Tetris.gb
+*.bin
 
 *.userprefs

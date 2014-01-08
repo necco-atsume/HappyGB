@@ -13,8 +13,8 @@ namespace HappyGB.Core
 		DarkGrey = 0x666666FF,
 		Black = 0x000000FF,*/
 
-		White = 0x11,
-		LightGrey = 0x10,
+		White = 0x03,
+		LightGrey = 0x02,
 		DarkGrey = 0x01,
 		Black = 0x00,
 	}

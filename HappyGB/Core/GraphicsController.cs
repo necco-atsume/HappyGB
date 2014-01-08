@@ -4,283 +4,303 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace HappyGB.Core
 {
-	public class GraphicsController
-	{
-		private bool lcdcVblank, lcdcHblank, lcdcOAM, lcdcScanline;
-		//fixme: raise the vblank interrupt in here.
-		private const int SCANLINE_INTERVAL = 456;
-		private byte[] vram;
-		private byte[] oam;
+    public class GraphicsController
+    {
+        private bool lcdcEqual, lcdcOamAccess, lcdcVblank, lcdcHblank;
+        private const int SCANLINE_INTERVAL = 456;
+        private byte[] vram;
+        private byte[] oam;
 
-		private int scanline;
-		private int clock;
-		public enum LCDState
-		{
-			VBlank,
-			HBlank,
-			OamAccess,
-			LCDCopy
-		}
+        private int scanline;
+        private int clock;
 
-		private LCDState state;
+        public enum LCDState
+            : byte
+        {
+            VBlank = 0x00,
+            HBlank = 0x01,
+            OamAccess = 0x02,
+            LCDCopy = 0x03
+        }
 
-		private GbPalette obp0, obp1, bg;
+        private LCDState state;
 
-		private ISurface buffer;
-		private SurfaceBlitter blitter;
+        private GbPalette obp0, obp1, bg;
 
-		public ISurface Surface
-		{
-			get { return buffer; }
-		}
+        private ISurface buffer;
+        private SurfaceBlitter blitter;
 
-		//TODO: Registers.
-		public byte LCDC
-		{
-			get;
-			set;
-		}
+        public ISurface Surface
+        {
+            get { return buffer; }
+        }
 
-		public byte STAT 
-		{
-			get;
-			set;
-		}
+        //TODO: Registers.
+        public byte LCDC
+        {
+            get;
+            set;
+        }
 
-		public byte SCY 
-		{
-			get;
-			set;
-		}
+        public byte STAT 
+        {
+            get
+            {
+                int res = 0;
+                res |= lcdcEqual ? 0x40 : 0x00;
+                res |= lcdcOamAccess ? 0x20 : 0x00;
+                res |= lcdcVblank ? 0x10 : 0x00;
+                res |= lcdcHblank ? 0x08 : 0x00;
+                res |= (LY == LYC) ? 0x04 : 0x00;
+                res |= (byte)state;
+                return (byte)(res & 0xFF);
+            }
 
-		public byte SCX
-		{
-			get;
-			set;
-		}
+            set
+            {
+                lcdcEqual = ((value & 0x40) == 0x40);
+                lcdcOamAccess = ((value & 0x20) == 0x20);
+                lcdcVblank = ((value & 0x10) == 0x10);
+                lcdcHblank = ((value & 0x08) == 0x08);
+            }
+        }
 
-		public byte LY
-		{
-			get { return (byte)scanline; }
-			set { scanline = 0; } //FIXME: Should this actually do that? That'll f things up! 
-		}
+        public byte SCY 
+        {
+            get;
+            set;
+        }
 
-		public byte LYC
-		{
-			get;
-			set;
-		}
+        public byte SCX
+        {
+            get;
+            set;
+        }
 
-		//Palettes: Update the SurfaceBlitter.
-		public byte BGP 
-		{
-			get { return bg.RegisterValue; }
-			set { bg.RegisterValue = value; }
-		}
+        public byte LY
+        {
+            get { return (byte)scanline; }
+            set { scanline = 0; } //FIXME: Should this actually do that? That'll f things up! 
+        }
 
-		public byte OBP0 
-		{
-			get { return obp0.RegisterValue; }
-			set { obp0.RegisterValue = value; }
+        public byte LYC
+        {
+            get;
+            set;
+        }
 
-		}
+        //Palettes: Update the SurfaceBlitter.
+        public byte BGP 
+        {
+            get { return bg.RegisterValue; }
+            set { bg.RegisterValue = value; }
+        }
 
-		public byte OBP1 
-		{
-			get { return obp1.RegisterValue; }
-			set { obp1.RegisterValue = value; }
-		}
+        public byte OBP0 
+        {
+            get { return obp0.RegisterValue; }
+            set { obp0.RegisterValue = value; }
 
-		public byte WY 
-		{
-			get;
-			set;
-		}
+        }
 
-		public byte WX 
-		{
-			get;
-			set;
-		}
+        public byte OBP1 
+        {
+            get { return obp1.RegisterValue; }
+            set { obp1.RegisterValue = value; }
+        }
 
-		public GraphicsController()
-		{
-			buffer = new ScreenSurface();
-			state = LCDState.HBlank;
-			clock = scanline = 0;
-			lcdcHblank = lcdcOAM = lcdcScanline = lcdcVblank = false;
-			blitter = new SurfaceBlitter();
-			vram = new byte[0x2000];
-			oam = new byte[0xA0];
+        public byte WY 
+        {
+            get;
+            set;
+        }
 
-			bg = new GbPalette(false);
-			obp0 = new GbPalette(true);
-			obp1 = new GbPalette(true);
-		}
+        public byte WX 
+        {
+            get;
+            set;
+        }
 
-		/// <summary>
-		/// Updates the graphics controller with the given clock.
-		/// </summary>
-		public InterruptType Update(int ticks)
-		{
-			clock += ticks;
-			switch (state) 
-			{
-			case LCDState.HBlank:
-				if (clock > 201) 
-				{
-					clock = 0;
-					state = LCDState.OamAccess;
-				}
-				break;
+        public GraphicsController()
+        {
+            buffer = new ScreenSurface();
+            state = LCDState.HBlank;
+            clock = scanline = 0;
+            lcdcHblank = lcdcOamAccess = lcdcEqual = lcdcVblank = false;
+            blitter = new SurfaceBlitter();
+            vram = new byte[0x2000];
+            oam = new byte[0xA0];
 
-			case LCDState.VBlank:
-				//We update the scanline here too.
-				scanline = (144 + (clock % SCANLINE_INTERVAL));
-				if (clock == ticks) //since we just booped the counter.
-				{
-					if (lcdcVblank) //FIXME: we can't have two interupts @ the same time right?
-						return InterruptType.VBlank | InterruptType.LCDController;
-					else return InterruptType.VBlank; //This should work???
-				}
-				if (clock > 4560) 
-				{
-					clock = 0;
-					state = LCDState.OamAccess;
-					if (lcdcOAM)
-						return InterruptType.LCDController;
-				}
-				break;
+            bg = new GbPalette(false);
+            obp0 = new GbPalette(true);
+            obp1 = new GbPalette(true);
+        }
 
-			case LCDState.OamAccess:
-				if (clock > 77) {
-					clock = 0;
-					state = LCDState.LCDCopy;
-				}
-				break;
-			case LCDState.LCDCopy:
-				if(clock > 169)
-				{
-					if (scanline >= 144)
-					{
-						state = LCDState.VBlank; 
-						clock = 0;
-					}
-					else
-					{
-						clock = 0;
-						WriteScanline();
-						scanline++;
-						state = LCDState.HBlank;
-					}
+        /// <summary>
+        /// Updates the graphics controller with the given clock.
+        /// </summary>
+        public InterruptType Update(int ticks)
+        {
+            clock += ticks;
+            switch (state) 
+            {
+            case LCDState.HBlank:
+                if (clock > 201) 
+                {
+                    clock = 0;
+                    state = LCDState.OamAccess;
+                }
+                break;
 
-					if (LY == LYC) {
-						//TODO: If we have ly=lyc interrupts enabled fire one.
-						return InterruptType.LCDController;
-					}
-				}
+            case LCDState.VBlank:
+                //We update the scanline here too.
+                scanline = (144 + (clock % SCANLINE_INTERVAL));
+                if (clock == ticks) //since we just booped the counter.
+                {
+                    if (lcdcVblank) //FIXME: we can't have two interupts @ the same time right?
+                        return InterruptType.VBlank | InterruptType.LCDController;
+                    else return InterruptType.VBlank; //This should work???
+                }
 
-				break;
-			}
-			return InterruptType.None;
-		}
+                if (clock > 4560) 
+                {
+                    clock = scanline = 0;
+                    state = LCDState.OamAccess;
+                    if (lcdcOamAccess)
+                        return InterruptType.LCDController;
+                }
+                break;
 
-		public byte ReadOAM8(ushort address)
-		{
-			return oam[address - 0xFE00];
-		}
+            case LCDState.OamAccess:
+                if (clock > 77) {
+                    clock = 0;
+                    state = LCDState.LCDCopy;
+                }
+                break;
 
-		public void WriteOAM8(ushort address, byte value)
-		{
-			oam[address - 0xFE00] = value;
-		}
+            case LCDState.LCDCopy:
+                if(clock > 169)
+                {
+                    if (scanline >= 144)
+                    {
+                        state = LCDState.VBlank; 
+                        clock = 0;
+                    }
+                    else
+                    {
+                        clock = 0;
+                        WriteScanline();
+                        scanline++;
+                        state = LCDState.HBlank;
+                    }
 
-		public byte ReadVRAM8(ushort address)
-		{
-			return vram[address - 0x8000];
-		}
+                    if (LY == LYC) {
+                        //TODO: If we have ly=lyc interrupts enabled fire one.
+                        return InterruptType.LCDController;
+                    }
+                }
 
-		public void WriteVRAM8(ushort address, byte value)
-		{
-			vram[address - 0x8000] = value;
-		}
+                break;
+            }
+            return InterruptType.None;
+        }
 
-		/// <summary>
-		/// Writes one full scanline to the back buffer.
-		/// </summary>
-		private unsafe void WriteScanline()
-		{
-			for (int x = 0; x < 160; x += 8) 
-			{
-				ushort backAddrBase = ((LCDC & 0x80) == 0x80) ? (ushort)0x9C00 : (ushort)0x9800;
-				ushort windAddrBase = ((LCDC & 0x40) == 0x40) ? (ushort)0x9C00 : (ushort)0x9800;
-				ushort tileDataBase = ((LCDC & 0x10) == 0x10) ? (ushort)0x8000 : (ushort)0x8800;
-				bool signedTileData = backAddrBase == 0x8000;
+        public byte ReadOAM8(ushort address)
+        {
+            return oam[address - 0xFE00];
+        }
 
-				bool windowEnabled = ((LCDC & 0x20) == 0x20);
+        public void WriteOAM8(ushort address, byte value)
+        {
+            oam[address - 0xFE00] = value;
+        }
 
-				//get the tile at the x,y.
-				//Do BG first.
-				int bTileRow = ((SCY + scanline) & 0xFF) / 32;
-				int bTileCol = ((SCX + x) & 0xFF) / 32;
-				ushort tileOffset = (ushort) (backAddrBase + (bTileRow * 32) + bTileCol);
+        public byte ReadVRAM8(ushort address)
+        {
+            return vram[address - 0x8000];
+        }
 
-				ushort dataOffsetAddr = 0;
-				if (!signedTileData)
-				{
-					byte tileNumber = ReadVRAM8(tileOffset);
-					dataOffsetAddr = (ushort)(tileDataBase + tileNumber);
-				}
-				else
-				{
-					sbyte tileNumber = unchecked((sbyte)ReadVRAM8(tileOffset));
-					dataOffsetAddr = (ushort)(tileDataBase + tileNumber);
-				}
+        public void WriteVRAM8(ushort address, byte value)
+        {
+            vram[address - 0x8000] = value;
+        }
 
-				//Add scanline to tile offset so we get the correct tile scanline.
-				dataOffsetAddr += (ushort)(((scanline + SCY) % 8) * 2);
+        /// <summary>
+        /// Writes one full scanline to the back buffer.
+        /// </summary>
+        private unsafe void WriteScanline()
+        {
+            for (int x = 0; x < 160; x += 8) 
+            {
+                ushort backAddrBase = ((LCDC & 0x80) == 0x80) ? (ushort)0x9C00 : (ushort)0x9800;
+                ushort windAddrBase = ((LCDC & 0x40) == 0x40) ? (ushort)0x9C00 : (ushort)0x9800;
+                ushort tileDataBase = ((LCDC & 0x10) == 0x10) ? (ushort)0x8000 : (ushort)0x8800;
+                bool signedTileData = backAddrBase == 0x8000;
 
-				byte tileHi = ReadVRAM8(dataOffsetAddr);
-				byte tileLo = ReadVRAM8((ushort)(dataOffsetAddr + 1));
+                bool windowEnabled = ((LCDC & 0x20) == 0x20);
 
-				//draw that tile to the buffer.
-				DrawTileScan(bg, tileHi, tileLo, x - (SCX % 8), scanline);
-				//Now draw window
+                //get the tile at the x,y.
+                //Do BG first.
+                int bTileRow = ((SCY + scanline) & 0xFF) / 32;
+                int bTileCol = ((SCX + x) & 0xFF) / 32;
+                ushort tileOffset = (ushort) (backAddrBase + (bTileRow * 32) + bTileCol);
 
-				//now draw sprites.
-			}
-		}
+                ushort dataOffsetAddr = 0;
+                if (!signedTileData)
+                {
+                    byte tileNumber = ReadVRAM8(tileOffset);
+                    dataOffsetAddr = (ushort)(tileDataBase + tileNumber);
+                }
+                else
+                {
+                    sbyte tileNumber = unchecked((sbyte)ReadVRAM8(tileOffset));
+                    dataOffsetAddr = (ushort)(tileDataBase + tileNumber);
+                }
 
-		private unsafe void DrawTileScan(GbPalette pal, byte tileHigh, byte tileLow, int x, int y)
-		{
-			//Put both in the same int so we only have to shift once per thing.
-			int bit = (tileHigh << 8) + tileLow;
+                //Add scanline to tile offset so we get the correct tile scanline.
+                dataOffsetAddr += (ushort)(((scanline + SCY) % 8) * 2);
 
-			int absOffset = ((y - SCY) * 160) + x;
+                byte tileHi = ReadVRAM8(dataOffsetAddr);
+                byte tileLo = ReadVRAM8((ushort)(dataOffsetAddr + 1));
 
-			//Draw 8 pixels.
-			for (int b = 0; b < 8; b++)
-			{
-				//Don't draw off the screen.
-				if (x + b < 0) continue;
-				if (x + b > 160) continue;
+                //draw that tile to the buffer.
+                DrawTileScan(bg, tileHi, tileLo, x - (SCX % 8), scanline);
+                //Now draw window
 
-				//Get the color from the tile's data.
-				byte paletteColor = 0;
-				if ((bit & 0x01) == 0x01)
-					paletteColor |= 0x01;
-				if ((bit & 0x10) == 0x10)
-					paletteColor |= 0x02;
+                //now draw sprites.
+            }
+        }
 
-				Color c = pal.GetColor(paletteColor);
+        private unsafe void DrawTileScan(GbPalette pal, byte tileHigh, byte tileLow, int x, int y)
+        {
+            //Put both in the same int so we only have to shift once per thing.
+            int bit = (tileHigh << 8) + tileLow;
 
-				//Draw to the thing.
-				Surface.Buffer[absOffset] = c;
-				absOffset++;
+            int absOffset = ((y - SCY) * 160) + x;
 
-				bit = bit >> 2;
-			}
-		}
-	}
+            //Draw 8 pixels.
+            for (int b = 0; b < 8; b++)
+            {
+                //Don't draw off the screen.
+                if (x + b < 0) continue;
+                if (x + b > 160) continue;
+
+                //Get the color from the tile's data.
+                byte paletteColor = 0;
+                if ((bit & 0x01) == 0x01)
+                    paletteColor |= 0x01;
+                if ((bit & 0x10) == 0x10)
+                    paletteColor |= 0x02;
+
+                Color c = pal.GetColor(paletteColor);
+
+                //Draw to the thing.
+                Surface.Buffer[absOffset + b] = c;
+                absOffset++;
+
+                bit = bit >> 2;
+            }
+        }
+    }
 }
 

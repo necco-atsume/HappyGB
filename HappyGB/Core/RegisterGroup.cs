@@ -93,8 +93,12 @@ namespace HappyGB.Core
 
 		public override string ToString()
 		{
-			return string.Format("[a:{0:X2} b:{1:X2} c:{2:X2} d:{3:X2} e:{4:X2} h:{5:X2} l:{6:X2}] [pc:{7:X4} sp:{8:X4}] [flags:{9:X2} hl: {10:X4}]\n",
-				a, b, c, d, e, h, l, pc, sp, _f, hl );
+			return string.Format("[a:{0:X2} b:{1:X2} c:{2:X2} d:{3:X2} e:{4:X2} h:{5:X2} l:{6:X2}] [pc:{7:X4} sp:{8:X4}] hl: {9:X4}] [{10}{11}{12}{13}]\n",
+				a, b, c, d, e, h, l, pc, sp, hl,
+                ZF? "Z": "-",
+                NF? "N": "-",
+                HCF? "H": "-",
+                CF? "C": "-");
 		}
 	}
 }

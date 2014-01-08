@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -38,6 +38,7 @@
     <Content Include="app.desktop">
       <DeployService-TargetDirectoryId>Linux.DesktopApplications</DeployService-TargetDirectoryId>
     </Content>
+    <Content Include="SDL.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -46,29 +47,11 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
-    <Reference Include="Lidgren.Network">
-      <HintPath>..\..\monogame\MonoGame\MonoGame.Framework\bin\Linux\Release\Lidgren.Network.dll</HintPath>
-    </Reference>
     <Reference Include="MonoGame.Framework">
       <HintPath>..\..\monogame\MonoGame\MonoGame.Framework\bin\Linux\Release\MonoGame.Framework.dll</HintPath>
     </Reference>
-    <Reference Include="OpenTK.Compatibility">
-      <HintPath>..\..\monogame\MonoGame\MonoGame.Framework\bin\Linux\Release\OpenTK.Compatibility.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenTK">
-      <HintPath>..\..\monogame\MonoGame\MonoGame.Framework\bin\Linux\Release\OpenTK.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenTK.GLControl">
-      <HintPath>..\..\monogame\MonoGame\MonoGame.Framework\bin\Linux\Release\OpenTK.GLControl.dll</HintPath>
-    </Reference>
-    <Reference Include="Tao.Sdl">
-      <HintPath>..\..\monogame\MonoGame\MonoGame.Framework\bin\Linux\Release\Tao.Sdl.dll</HintPath>
-    </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Core\" />
-    <Folder Include="Xna\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Compile Include="Core\GBZ80.cs" />
     <Compile Include="Core\RegisterGroup.cs" />
@@ -92,6 +75,22 @@
     <Compile Include="Xna\GbGame.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cpu_instrs.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="DMG_ROM.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ttt.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="instr_timing.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="mem_timing.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
     <None Include="Tetris.gb">
       <DependentUpon>Program.cs</DependentUpon>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -107,4 +106,5 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <Import Project="packages\MonoGame.3.0.1\build\net40\MonoGame.targets" Condition="Exists('packages\MonoGame.3.0.1\build\net40\MonoGame.targets')" />
 </Project>
