@@ -61,7 +61,11 @@ namespace HappyGB.Core
             ulong startTicks;
             ulong ticksSinceLastYield = localTickCount;
             var lcdInterrupt = InterruptType.None;
-            halted = false;
+
+            halted = false; //???
+
+            bool shouldReturn = false;
+            
             while (true) {
 
                 ///Hack: Breakpoints will be implemented actually sometime.
@@ -70,12 +74,6 @@ namespace HappyGB.Core
                 //    System.Diagnostics.Debug.WriteLine("Breakpoint hit!");
                 //}
 
-                ///Hack: We don't yield until a VBlank happens. We need this to make sure the cpu
-                ///doesn't lock up the main thread if interrupts get disabled.
-                ///This will probably result in half-drawn frames or worse if it happens, but is 
-                ///good enough for now.
-                if (localTickCount - ticksSinceLastYield > (70224 * 60))
-                    return false;
 
                 //Handle interrupts.
                 if (cpuInterruptEnable && ((M.IE & M.IF) != 0))
@@ -86,8 +84,6 @@ namespace HappyGB.Core
                     {
                         //Handle VBlank
                         HandleInterrupt(InterruptType.VBlank);
-                        //Run(graphics, interrupts);
-                        return true;
                     }
                     if (mf.HasFlag(InterruptType.LCDController))
                     {
@@ -119,13 +115,20 @@ namespace HappyGB.Core
                 //Update the lcd controller.
                 int instructionTicks = (int)(localTickCount - startTicks);
                 lcdInterrupt = graphics.Update(instructionTicks);
+                if (lcdInterrupt.HasFlag(InterruptType.VBlank))
+                {
+                    shouldReturn = true;
+                }
                 M.IF |= (byte)lcdInterrupt;
 
                 //Handle interrupts in priority order.
                 M.IF |= (byte)interrupts.Tick(instructionTicks);
 
                 //TODO: Pin io.
-                System.Diagnostics.Debug.WriteLine("[" + localTickCount + "] " + R.ToString());
+                //System.Diagnostics.Debug.WriteLine("[" + localTickCount + "] " + R.ToString());
+
+                if (shouldReturn)
+                    return true;
             }
             throw new InvalidOperationException("This shouldn't have gotten here.");
         }
