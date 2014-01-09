@@ -257,17 +257,18 @@ namespace HappyGB.Core
                 if (!signedTileData)
                 {
                     byte tileNumber = ReadVRAM8((ushort)(bTileOffset + i));
-                    dataOffsetAddr = (ushort)(tileDataBase + tileNumber);
+                    dataOffsetAddr = (ushort)(tileDataBase + 16*tileNumber);
                 }
                 else
                 {
                     sbyte tileNumber = unchecked((sbyte)ReadVRAM8((ushort)(bTileOffset + i)));
-                    dataOffsetAddr = (ushort)(tileDataBase + tileNumber);
+                    dataOffsetAddr = (ushort)(tileDataBase + 16*tileNumber);
                 }
 
 
                 //Add scanline to tile offset so we get the correct tile scanline.
-                dataOffsetAddr += (ushort)(((scanline + SCY) % TILE_PX) * 2);
+                ushort tileDataOffset = (ushort)((2 * (scanline + SCY)) % (TILE_PX * 2));
+                dataOffsetAddr += tileDataOffset;
 
                 byte tileHi = ReadVRAM8(dataOffsetAddr);
                 byte tileLo = ReadVRAM8((ushort)(dataOffsetAddr + 1));
