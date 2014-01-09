@@ -12,57 +12,58 @@ using HappyGB.Core;
 
 namespace HappyGB.Xna
 {
-	public class GbGame
-		: Game
-	{
-		Gameboy gb;
+    public class GbGame
+        : Game
+    {
+        Gameboy gb;
 
-		private GraphicsDeviceManager graphics;
+        private GraphicsDeviceManager graphics;
 
-		private SpriteBatch spriteBatch;
+        private SpriteBatch spriteBatch;
 
-		public GbGame()
-		{
-			graphics = new GraphicsDeviceManager(this);
-			graphics.GraphicsProfile = GraphicsProfile.Reach;
-			graphics.PreferredBackBufferWidth = 160;
-			graphics.PreferredBackBufferHeight = 144;
+        public GbGame()
+        {
+            graphics = new GraphicsDeviceManager(this);
+            graphics.GraphicsProfile = GraphicsProfile.Reach;
+            graphics.PreferredBackBufferWidth = 160 * 2;
+            graphics.PreferredBackBufferHeight = 144 * 2;
 
-			this.IsFixedTimeStep = true;
-			this.TargetElapsedTime = TimeSpan.FromMilliseconds(1000.0 / 60.0);
+            this.IsFixedTimeStep = true;
+            this.TargetElapsedTime = TimeSpan.FromMilliseconds(1000.0 / 60.0);
 
-			gb = new Gameboy();
-		}
+            gb = new Gameboy();
+        }
 
-		protected override void Initialize()
-		{
-			gb.Initialize();
-			base.Initialize();
-		}
+        protected override void Initialize()
+        {
+            gb.Initialize();
+            base.Initialize();
+        }
 
-		protected override void LoadContent()
-		{
-			spriteBatch = new SpriteBatch(GraphicsDevice);
-			gb.GetSurface().Initialize(GraphicsDevice);
-		}
+        protected override void LoadContent()
+        {
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+            gb.GetSurface().Initialize(GraphicsDevice);
+        }
 
-		protected override void Update(GameTime gameTime)
-		{
-			gb.RunOneFrame();
-			base.Update(gameTime);
-		}
+        protected override void Update(GameTime gameTime)
+        {
+            gb.RunOneFrame();
+            base.Update(gameTime);
+        }
 
-		protected override void Draw(GameTime gameTime)
-		{
-			GraphicsDevice.Clear(Color.CornflowerBlue);
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, 
+                SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone);
+            spriteBatch.Draw(gb.GetSurface().Surface, Vector2.Zero, null, Color.White, 0f, 
+                Vector2.Zero, 2f, SpriteEffects.None, 1f);
+            spriteBatch.End();
 
-			spriteBatch.Begin();
-			spriteBatch.Draw(gb.GetSurface().Surface, Vector2.Zero, Color.White);
-			spriteBatch.End();
+            base.Draw(gameTime);
+        }
 
-			base.Draw(gameTime);
-		}
-
-	}
+    }
 }
 
