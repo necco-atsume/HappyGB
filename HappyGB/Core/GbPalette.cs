@@ -96,10 +96,10 @@ namespace HappyGB.Core
 				throw new NotImplementedException();
 			}
 			set {
-				Color0 = (GbColorMonochrome)(value & 0x02);
-				Color1 = (GbColorMonochrome)((value >> 2) & 0x02);
-				Color2 = (GbColorMonochrome)((value >> 4) & 0x02);
-				Color3 = (GbColorMonochrome)((value >> 6) & 0x02);
+				Color0 = (GbColorMonochrome)(value & 0x03);
+				Color1 = (GbColorMonochrome)((value >> 2) & 0x03);
+				Color2 = (GbColorMonochrome)((value >> 4) & 0x03);
+				Color3 = (GbColorMonochrome)((value >> 6) & 0x03);
 			}
 		}
 

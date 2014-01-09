@@ -65,6 +65,10 @@ namespace HappyGB.Core
             }
         }
 
+        private const short SCREEN_WIDTH = 160;
+        private const short TILEMAP_SIZE = 32;
+        private const short TILE_PX = 8;
+
         public byte SCY 
         {
             get;
@@ -230,75 +234,85 @@ namespace HappyGB.Core
         /// </summary>
         private unsafe void WriteScanline()
         {
-            for (int x = 0; x < 160; x += 8) 
+            ushort backAddrBase = ((LCDC & 0x08) == 0x08) ? (ushort)0x9C00 : (ushort)0x9800;
+            ushort windAddrBase = ((LCDC & 0x40) == 0x40) ? (ushort)0x9C00 : (ushort)0x9800;
+            ushort tileDataBase = ((LCDC & 0x10) == 0x10) ? (ushort)0x8000 : (ushort)0x8800;
+            bool signedTileData = backAddrBase == 0x8000;
+
+            bool windowEnabled = ((LCDC & 0x20) == 0x20);
+
+            int xscan = -(SCX % TILE_PX); //Get the start of the first tile in the scanline rel to screen.
+
+            //Compute these before.
+            int bTileRow = ((SCY + scanline) / TILE_PX) % TILEMAP_SIZE;
+            int bTileColBase = ((SCX + xscan) / TILE_PX) % TILEMAP_SIZE;
+            int bTileOffset = backAddrBase + (bTileRow * TILEMAP_SIZE) + bTileColBase;
+
+            for (int i = 0; i < 21; i++)  //# of tiles in window + 1. We have to account for edges.
             {
-                ushort backAddrBase = ((LCDC & 0x80) == 0x80) ? (ushort)0x9C00 : (ushort)0x9800;
-                ushort windAddrBase = ((LCDC & 0x40) == 0x40) ? (ushort)0x9C00 : (ushort)0x9800;
-                ushort tileDataBase = ((LCDC & 0x10) == 0x10) ? (ushort)0x8000 : (ushort)0x8800;
-                bool signedTileData = backAddrBase == 0x8000;
-
-                bool windowEnabled = ((LCDC & 0x20) == 0x20);
-
                 //get the tile at the x,y.
                 //Do BG first.
-                int bTileRow = ((SCY + scanline) & 0xFF) / 32;
-                int bTileCol = ((SCX + x) & 0xFF) / 32;
-                ushort tileOffset = (ushort) (backAddrBase + (bTileRow * 32) + bTileCol);
 
                 ushort dataOffsetAddr = 0;
                 if (!signedTileData)
                 {
-                    byte tileNumber = ReadVRAM8(tileOffset);
+                    byte tileNumber = ReadVRAM8((ushort)(bTileOffset + i));
                     dataOffsetAddr = (ushort)(tileDataBase + tileNumber);
                 }
                 else
                 {
-                    sbyte tileNumber = unchecked((sbyte)ReadVRAM8(tileOffset));
+                    sbyte tileNumber = unchecked((sbyte)ReadVRAM8((ushort)(bTileOffset + i)));
                     dataOffsetAddr = (ushort)(tileDataBase + tileNumber);
                 }
 
+
                 //Add scanline to tile offset so we get the correct tile scanline.
-                dataOffsetAddr += (ushort)(((scanline + SCY) % 8) * 2);
+                dataOffsetAddr += (ushort)(((scanline + SCY) % TILE_PX) * 2);
 
                 byte tileHi = ReadVRAM8(dataOffsetAddr);
                 byte tileLo = ReadVRAM8((ushort)(dataOffsetAddr + 1));
 
                 //draw that tile to the buffer.
-                DrawTileScan(bg, tileHi, tileLo, x - (SCX % 8), scanline);
+                DrawTileScan(bg, tileHi, tileLo, xscan, scanline);
                 //Now draw window
-
                 //now draw sprites.
+
+                xscan += TILE_PX;
             }
         }
 
-        private unsafe void DrawTileScan(GbPalette pal, byte tileHigh, byte tileLow, int x, int y)
+        private void DrawTileScan(GbPalette pal, byte tileHigh, byte tileLow, int x, int y)
         {
             //Put both in the same int so we only have to shift once per thing.
             int bit = (tileHigh << 8) + tileLow;
 
-            int absOffset = ((y - SCY) * 160) + x;
+            int absOffset = (y * SCREEN_WIDTH) + x;
 
             //Draw 8 pixels.
-            for (int b = 0; b < 8; b++)
+            for (int pixOffset = 0; pixOffset < 8; pixOffset++)
             {
                 //Don't draw off the screen.
-                if (x + b < 0) continue;
-                if (x + b > 160) continue;
+                if (x + pixOffset < 0) continue;
+                if (x + pixOffset >= SCREEN_WIDTH) continue;
 
                 //Get the color from the tile's data.
                 byte paletteColor = 0;
-                if ((bit & 0x01) == 0x01)
-                    paletteColor |= 0x01;
-                if ((bit & 0x10) == 0x10)
+                if ((bit & 0x8000) == 0x8000)
                     paletteColor |= 0x02;
+                if ((bit & 0x80) == 0x80)
+                    paletteColor |= 0x01;
 
                 Color c = pal.GetColor(paletteColor);
+                //if (x + pixOffset == SCX)
+                //    c = Color.Red;
+
+                //if (y == SCY)
+                //    c = Color.Green;
 
                 //Draw to the thing.
-                Surface.Buffer[absOffset + b] = c;
-                absOffset++;
+                Surface.Buffer[(absOffset + pixOffset)] = c;
 
-                bit = bit >> 2;
+                bit = bit << 1;
             }
         }
     }
