@@ -1,5 +1,20 @@
 HappyGB/obj/*
 HappyGB/bin/*
+HappyGB/packages/*
+
+HappyGB/HappyGBTests/bin/*
+HappyGB/HappyGBTests/obj/*
+HappyGB/HappyGBTests/packages/*
+
+*.dll
+*.user
+*.suo
+*.[Cc]ache
+*.bak
+*.ncb
+*.log
+*.DS_Store
+[Tt]humbs.db
 
 *.gb
 *.userprefs
