@@ -393,7 +393,7 @@ namespace HappyGB.Core
         public void STOP()
         {
             Fetch8();
-            throw new NotImplementedException("Stop can't be supported til we get gamepads.");
+            //throw new NotImplementedException("Stop can't be supported til we get gamepads.");
         }
 
         #endregion

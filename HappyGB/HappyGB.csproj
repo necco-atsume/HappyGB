@@ -54,6 +54,7 @@
   <ItemGroup />
   <ItemGroup>
     <Compile Include="Core\GBZ80.cs" />
+    <Compile Include="Core\MBC1.cs" />
     <Compile Include="Core\RegisterGroup.cs" />
     <Compile Include="Core\MemoryMap.cs" />
     <Compile Include="Core\GBZ80Opcodes.cs" />
