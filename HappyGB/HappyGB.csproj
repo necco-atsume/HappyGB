@@ -68,17 +68,21 @@
     <Compile Include="Core\ScreenSurface.cs" />
     <Compile Include="ISurface.cs" />
     <Compile Include="Core\SurfaceBlitter.cs" />
-    <Compile Include="Core\InterruptScheduler.cs" />
+    <Compile Include="Core\TimerController.cs" />
     <Compile Include="Core\InterruptType.cs" />
     <Compile Include="Core\GbPalette.cs" />
     <Compile Include="Core\GbColorMonochrome.cs" />
     <Compile Include="Xna\GbGame.cs" />
+    <Compile Include="Xna\VramViewer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_instrs.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="DMG_ROM.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="spritefont.xnb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="ttt.gb">
@@ -93,6 +97,9 @@
     <None Include="packages.config" />
     <None Include="Tetris.gb">
       <DependentUpon>Program.cs</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="awake.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

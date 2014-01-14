@@ -33,7 +33,7 @@ namespace HappyGB.Core
 
         private IMemoryBankController cart;
         private GraphicsController gfx;
-        private InterruptScheduler timer;
+        private TimerController timer;
 
         public byte this[ushort addr]
         {	
@@ -66,7 +66,11 @@ namespace HappyGB.Core
                     case 0x0F:
                         return IF;
 
-                        ///Timer
+                    //Joypad P1
+                    //case 0x00:
+                    //    return 0xFF; 
+
+                    ///Timer
                     case 0x04: 
                         return timer.DIV;
                     case 0x05: 
@@ -76,7 +80,7 @@ namespace HappyGB.Core
                     case 0x07: 
                         return timer.TAC;
 
-                        ///Graphics.
+                    ///Graphics.
                     case 0x40: 
                         return gfx.LCDC;
                     case 0x41: 
@@ -205,7 +209,7 @@ namespace HappyGB.Core
             }
         }
 
-        public MemoryMap(IMemoryBankController cart, GraphicsController gfx, InterruptScheduler timer)
+        public MemoryMap(IMemoryBankController cart, GraphicsController gfx, TimerController timer)
         {
             internalRam = new byte[0x2000];
             highRam = new byte[0x80];

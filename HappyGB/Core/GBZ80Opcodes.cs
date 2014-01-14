@@ -431,7 +431,11 @@ namespace HappyGB.Core
                 R.pc = newPc;
                 return 12;
             }
-            else return 0;
+            else
+            {
+                Fetch16(); //Scoot forward 2 boops.
+                return 0;
+            }
         }
 
         public void RET()
@@ -448,7 +452,10 @@ namespace HappyGB.Core
                 RET();
                 return 12;
             }
-            else return 0;
+            else
+            {
+                return 0;
+            }
         }
 
         public void RST(ushort rstVector)

@@ -281,7 +281,7 @@ namespace HappyGB.Core
                     Tick(4);
                     break;
                 case 0x40:
-                    //LD b,b
+                    //LD b,b breakpoint.
                     Tick(4);
                     break;
                 case 0x41:
@@ -423,7 +423,7 @@ namespace HappyGB.Core
                     Tick(4);
                     break;
                 case 0x64:
-                    R.h = R.h;
+                    //R.h = R.h;
                     Tick(4);
                     break;
                 case 0x65:
@@ -459,7 +459,7 @@ namespace HappyGB.Core
                     Tick(4);
                     break;
                 case 0x6D:
-                    R.l = R.l;
+                    //R.l = R.l;
                     Tick(4);
                     break;
                 case 0x6E:
@@ -531,7 +531,7 @@ namespace HappyGB.Core
                     Tick(4);
                     break;
                 case 0x7F:
-                    R.a = R.a;
+                    //R.a = R.a;
                     Tick(4);
                     break;
                 case 0x80:
@@ -935,7 +935,8 @@ namespace HappyGB.Core
                     Tick(16);
                     break;
                 case 0xE9:
-                    JP(M[R.hl], true);
+                    //JP(M[R.hl], true);
+                    JP(R.hl, true);
                     //no tick; ticks 4 in jp.
                     //FIXME: 8bit data?
                     break;
@@ -952,7 +953,8 @@ namespace HappyGB.Core
                     Tick(16);
                     break;
                 case 0xF0:
-                    R.a = M[(ushort)(0xFF00 + Fetch8())];
+                    byte f = Fetch8();
+                    R.a = M[(ushort)(0xFF00 + f)];
                     Tick(12);
                     break;
                 case 0xF1:

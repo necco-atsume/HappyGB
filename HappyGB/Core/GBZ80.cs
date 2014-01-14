@@ -54,7 +54,7 @@ namespace HappyGB.Core
             M[0xFFFF] = 0x00; //IE
         }
 
-        public bool Run(GraphicsController graphics, InterruptScheduler interrupts)
+        public bool Run(GraphicsController graphics, TimerController interrupts)
         {
             //Run until an interrupt is hit.
             //Then handle that interrupt.
@@ -64,16 +64,15 @@ namespace HappyGB.Core
 
             halted = false; //???
 
-            bool shouldReturn = false;
+            bool shouldYield = false;
             
             while (true) {
 
                 ///Hack: Breakpoints will be implemented actually sometime.
-                //if (R.pc == 0x29A)
-                //{
-                //    System.Diagnostics.Debug.WriteLine("Breakpoint hit!");
-                //}
-
+                if (R.pc == 0x282e)
+                {
+                    System.Diagnostics.Debug.WriteLine("Breakpoint hit!");
+                }
 
                 //Handle interrupts.
                 if (cpuInterruptEnable && ((M.IE & M.IF) != 0))
@@ -117,7 +116,7 @@ namespace HappyGB.Core
                 lcdInterrupt = graphics.Update(instructionTicks);
                 if (lcdInterrupt.HasFlag(InterruptType.VBlank))
                 {
-                    shouldReturn = true;
+                    shouldYield = true;
                 }
                 M.IF |= (byte)lcdInterrupt;
 
@@ -127,7 +126,7 @@ namespace HappyGB.Core
                 //TODO: Pin io.
                 //System.Diagnostics.Debug.WriteLine("[" + localTickCount + "] " + R.ToString());
 
-                if (shouldReturn)
+                if (shouldYield)
                     return true;
             }
             throw new InvalidOperationException("This shouldn't have gotten here.");

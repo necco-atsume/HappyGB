@@ -25,7 +25,8 @@ namespace HappyGB.Core
 
         private LCDState state;
 
-        private GbPalette obp0, obp1, bg;
+        //FIXME: Should be private; Hack to make VramViewer work.
+        public GbPalette obp0, obp1, bgp;
 
         private ISurface buffer;
         private SurfaceBlitter blitter;
@@ -96,8 +97,8 @@ namespace HappyGB.Core
         //Palettes: Update the SurfaceBlitter.
         public byte BGP 
         {
-            get { return bg.RegisterValue; }
-            set { bg.RegisterValue = value; }
+            get { return bgp.RegisterValue; }
+            set { bgp.RegisterValue = value; }
         }
 
         public byte OBP0 
@@ -135,7 +136,7 @@ namespace HappyGB.Core
             vram = new byte[0x2000];
             oam = new byte[0xA0];
 
-            bg = new GbPalette(false);
+            bgp = new GbPalette(false);
             obp0 = new GbPalette(true);
             obp1 = new GbPalette(true);
         }
@@ -158,7 +159,7 @@ namespace HappyGB.Core
 
             case LCDState.VBlank:
                 //We update the scanline here too.
-                scanline = (144 + (clock % SCANLINE_INTERVAL));
+                scanline = (144 + (clock / SCANLINE_INTERVAL));
                 if (clock == ticks) //since we just booped the counter.
                 {
                     if (lcdcVblank) //FIXME: we can't have two interupts @ the same time right?
@@ -238,10 +239,10 @@ namespace HappyGB.Core
             ushort windAddrBase = ((LCDC & 0x40) == 0x40) ? (ushort)0x9C00 : (ushort)0x9800;
             ushort tileDataBase = ((LCDC & 0x10) == 0x10) ? (ushort)0x8000 : (ushort)0x8800;
             bool signedTileData = backAddrBase == 0x8000;
-
             bool windowEnabled = ((LCDC & 0x20) == 0x20);
 
-            int xscan = -(SCX % TILE_PX); //Get the start of the first tile in the scanline rel to screen.
+            //Get the start of the first tile in the scanline rel to screen.
+            int xscan = -(SCX % TILE_PX);
 
             //Compute these before.
             int bTileRow = ((SCY + scanline) / TILE_PX) % TILEMAP_SIZE;
@@ -252,7 +253,6 @@ namespace HappyGB.Core
             {
                 //get the tile at the x,y.
                 //Do BG first.
-
                 ushort dataOffsetAddr = 0;
                 if (!signedTileData)
                 {
@@ -265,7 +265,6 @@ namespace HappyGB.Core
                     dataOffsetAddr = (ushort)(tileDataBase + 16*tileNumber);
                 }
 
-
                 //Add scanline to tile offset so we get the correct tile scanline.
                 ushort tileDataOffset = (ushort)((2 * (scanline + SCY)) % (TILE_PX * 2));
                 dataOffsetAddr += tileDataOffset;
@@ -274,8 +273,11 @@ namespace HappyGB.Core
                 byte tileLo = ReadVRAM8((ushort)(dataOffsetAddr + 1));
 
                 //draw that tile to the buffer.
-                DrawTileScan(bg, tileHi, tileLo, xscan, scanline);
+                DrawTileScan(bgp, tileHi, tileLo, xscan, scanline);
+
                 //Now draw window
+
+
                 //now draw sprites.
 
                 xscan += TILE_PX;
@@ -304,11 +306,6 @@ namespace HappyGB.Core
                     paletteColor |= 0x01;
 
                 Color c = pal.GetColor(paletteColor);
-                //if (x + pixOffset == SCX)
-                //    c = Color.Red;
-
-                //if (y == SCY)
-                //    c = Color.Green;
 
                 //Draw to the thing.
                 Surface.Buffer[(absOffset + pixOffset)] = c;
