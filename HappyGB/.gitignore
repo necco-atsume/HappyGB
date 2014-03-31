@@ -1,7 +1,11 @@
 obj/*
 bin/*
 
-Tetris.gb
+*.gb
 *.bin
 
+HappyGBTests/bin/*
+HappyGBTests/obj/*
+
 *.userprefs
+.nuget/*

@@ -12,8 +12,6 @@ namespace HappyGB.Core
         private int ROM_BANK_SIZE = 0x4000;
         private int RAM_BANK_SIZE = 0x2000;
 
-        private bool hasRam, battery;
-
         private bool ramMode;
 
         private byte[] rom, ram;
@@ -59,25 +57,6 @@ namespace HappyGB.Core
 
         public MBC1(CartReader cart, byte mbc, int romSizeKB, int ramSizeKB)
         {
-            //Get abilities.
-            switch (mbc)
-            {
-                case 1:
-                    hasRam = false;
-                    battery = false;
-                    break;
-                case 2:
-                    hasRam = true;
-                    battery = false;
-                    break;
-                case 3:
-                    hasRam = true;
-                    battery = true;
-                    break;
-                default:
-                    throw new ArgumentException("Error: Wrong MBC type passed to MBC1 constructor.");
-            }
-
             rom = cart.GetBuffer(romSizeKB * 1024);
 
             if (ramSizeKB < 0x2000) //Fill the rest with 0s, don't want to cause errors when a rom

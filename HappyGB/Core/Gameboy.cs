@@ -17,7 +17,7 @@ namespace HappyGB.Core
         }
         public Gameboy()
         {
-            CartReader cartReader = new CartReader("cpu_instrs.gb");
+            CartReader cartReader = new CartReader("Tetris.gb");
             cart = cartReader.CreateMBC();
             cartReader.Dispose();
             gfx = new GraphicsController();

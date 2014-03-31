@@ -10,10 +10,14 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace HappyGB.Xna
 {
+    /// <summary>
+    /// Displays VRAM state. Draws the tiles to a surface for the emulator to draw somewhere.
+    /// May be kinda slow.
+    /// </summary>
     public class VramViewer
     {
         private GraphicsController gfx;
-        private SpriteFont font;
+        //private SpriteFont font;
 
         private Color[] tiles, map1, map2;
         
@@ -76,9 +80,6 @@ namespace HappyGB.Xna
                 int currentData = (tileHigh << 8) + tileLow;
                 for (int tx = 0; tx < 8; tx++)
                 {
-                    if (currentData != 0)
-                    {
-                    }
 
                     int color = 0;
                     color |= ((currentData & 0x8000) == 0x8000) ? 0x01 : 0x00;
