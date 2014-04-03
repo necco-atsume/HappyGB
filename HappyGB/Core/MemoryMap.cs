@@ -31,9 +31,51 @@ namespace HappyGB.Core
             }
         }
 
+        private byte p1State;
+        public byte P1
+        {
+            get
+            {
+                int val = 0;
+
+                if (p1State == 0)
+                    return 0;
+
+                else if ((p1State & 0x20) == 0x20)
+                {
+                    if (input.GetInputState(GameboyKey.A))
+                        val |= 0x01;
+                    if (input.GetInputState(GameboyKey.B))
+                        val |= 0x02;
+                    if (input.GetInputState(GameboyKey.Select))
+                        val |= 0x04;
+                    if (input.GetInputState(GameboyKey.Start))
+                        val |= 0x08;
+                    return (byte)(val & p1State);
+                }
+                else
+                {
+                    if (input.GetInputState(GameboyKey.Right))
+                        val |= 0x01;
+                    if (input.GetInputState(GameboyKey.Left))
+                        val |= 0x02;
+                    if (input.GetInputState(GameboyKey.Up))
+                        val |= 0x04;
+                    if (input.GetInputState(GameboyKey.Down))
+                        val |= 0x08;
+                    return (byte)(val & p1State);
+                }
+            }
+            set
+            {
+                p1State = value;
+            }
+        }
+
         private IMemoryBankController cart;
         private GraphicsController gfx;
         private TimerController timer;
+        private IInputProvider input;
 
         public byte this[ushort addr]
         {	
@@ -67,8 +109,8 @@ namespace HappyGB.Core
                         return IF;
 
                     //Joypad P1
-                    //case 0x00:
-                    //    return 0xFF; 
+                    case 0x00:
+                        return P1; 
 
                     ///Timer
                     case 0x04: 
@@ -137,6 +179,10 @@ namespace HappyGB.Core
                     //IO and HighRam.
                     switch (addr & 0x00FF)
                     {
+                        case 0x00:
+                            P1 = value;
+                            break;
+
                         case 0xFF:
                             IE = value;
                             break;
@@ -209,7 +255,7 @@ namespace HappyGB.Core
             }
         }
 
-        public MemoryMap(IMemoryBankController cart, GraphicsController gfx, TimerController timer)
+        public MemoryMap(IMemoryBankController cart, GraphicsController gfx, TimerController timer, IInputProvider input)
         {
             internalRam = new byte[0x2000];
             highRam = new byte[0x80];
@@ -217,6 +263,8 @@ namespace HappyGB.Core
             this.gfx = gfx;
             this.timer = timer;
             biosEnabled = true;
+
+            this.input = input;
             
             using (var file = File.Open("DMG_ROM.bin", FileMode.Open, FileAccess.Read))
             using (BinaryReader r = new BinaryReader(file))

@@ -1,5 +1,6 @@
 obj/*
 bin/*
+.nuget/*
 
 *.gb
 *.bin
@@ -8,4 +9,3 @@ HappyGBTests/bin/*
 HappyGBTests/obj/*
 
 *.userprefs
-.nuget/*

@@ -22,6 +22,7 @@ namespace HappyGB.Xna
         private ContentManager content;
         private SpriteBatch spriteBatch;
         private VramViewer vramViewer;
+        private XnaInputProvider input;
 
         public GbGame()
         {
@@ -34,7 +35,8 @@ namespace HappyGB.Xna
             this.IsFixedTimeStep = true;
             this.TargetElapsedTime = TimeSpan.FromMilliseconds(1000.0 / 60.0);
 
-            gb = new Gameboy();
+            input = new XnaInputProvider();
+            gb = new Gameboy(input);
             vramViewer = new VramViewer(gb.gfx);
         }
 
@@ -56,6 +58,8 @@ namespace HappyGB.Xna
 
         protected override void Update(GameTime gameTime)
         {
+            input.UpdateInputState();
+
             gb.RunOneFrame();
             vramViewer.UpdateSurfaces();
             base.Update(gameTime);

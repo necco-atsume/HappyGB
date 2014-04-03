@@ -150,7 +150,7 @@ namespace HappyGB.Core
             switch (state) 
             {
             case LCDState.HBlank:
-                if (clock > 201) 
+                if (clock > 207) 
                 {
                     clock = 0;
                     state = LCDState.OamAccess;
@@ -177,14 +177,14 @@ namespace HappyGB.Core
                 break;
 
             case LCDState.OamAccess:
-                if (clock > 77) {
+                if (clock > 83) {
                     clock = 0;
                     state = LCDState.LCDCopy;
                 }
                 break;
 
             case LCDState.LCDCopy:
-                if(clock > 169)
+                if(clock > 175)
                 {
                     if (scanline >= 144)
                     {

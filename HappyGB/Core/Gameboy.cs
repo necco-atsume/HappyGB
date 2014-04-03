@@ -9,21 +9,24 @@ namespace HappyGB.Core
         TimerController timer;
         GBZ80 cpu;
 
+        IInputProvider input;
+
         //Hack: this is public for now
         public GraphicsController gfx
         {
             get;
             private set;
         }
-        public Gameboy()
+        public Gameboy(IInputProvider input)
         {
-            CartReader cartReader = new CartReader("Tetris.gb");
+            CartReader cartReader = new CartReader("ttt.gb");
             cart = cartReader.CreateMBC();
             cartReader.Dispose();
             gfx = new GraphicsController();
             timer = new TimerController();
-            mem = new MemoryMap(cart, gfx, timer);
+            mem = new MemoryMap(cart, gfx, timer, input);
             cpu = new GBZ80(mem);
+            this.input = input;
         }
 
         public void Initialize()
