@@ -429,6 +429,9 @@ namespace HappyGB.Core
                 ushort newPc = Fetch16();
                 M.Write16(R.sp, R.pc);
                 R.pc = newPc;
+
+                System.Diagnostics.Debug.WriteLine("Calling " + newPc.ToString("X4"));
+
                 return 12;
             }
             else

@@ -67,9 +67,9 @@ namespace HappyGB.Core
             bool shouldYield = false;
             
             while (true) {
-
+                var pcOld = R.pc;
                 ///Hack: Breakpoints will be implemented actually sometime.
-                if (R.pc == 0x282e)
+                if (R.pc == 0x21cc)
                 {
                     System.Diagnostics.Debug.WriteLine("Breakpoint hit!");
                 }
@@ -123,11 +123,20 @@ namespace HappyGB.Core
                 //Handle interrupts in priority order.
                 M.IF |= (byte)interrupts.Tick(instructionTicks);
 
-                //TODO: Pin io.
-                //System.Diagnostics.Debug.WriteLine("[" + localTickCount + "] " + R.ToString());
+                /*
+                if (pcOld != R.pc + 1)
+                {
+                    if ((pcOld - R.pc > 255)
+                     || ( R.pc - pcOld > 255))
+                        //System.Diagnostics.Debug.WriteLine(R.pc.ToString("x4"));
+                        System.Diagnostics.Debug.WriteLine(R.ToString());
+                }
+                 */
 
                 if (shouldYield)
+                {
                     return true;
+                }
             }
             throw new InvalidOperationException("This shouldn't have gotten here.");
         }
@@ -155,7 +164,7 @@ namespace HappyGB.Core
 
         public void HandleInterrupt(InterruptType interrupt)
         {
-            System.Diagnostics.Debug.WriteLine(interrupt.ToString());
+            //System.Diagnostics.Debug.WriteLine(interrupt.ToString());
             M.IF &= (byte)(0xFF - (byte)interrupt); //Unset in IF.
             cpuInterruptEnable = false; //Unset master interrupt.
             switch (interrupt)

@@ -17,8 +17,8 @@ namespace HappyGB.Core
         public enum LCDState
             : byte
         {
-            VBlank = 0x00,
-            HBlank = 0x01,
+            HBlank = 0x00,
+            VBlank = 0x01,
             OamAccess = 0x02,
             LCDCopy = 0x03
         }
@@ -37,12 +37,18 @@ namespace HappyGB.Core
         }
 
         //TODO: Registers.
+        /// <summary>
+        /// The LCD Control register.
+        /// </summary>
         public byte LCDC
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// The LCD Status register.
+        /// </summary>
         public byte STAT 
         {
             get
@@ -70,24 +76,43 @@ namespace HappyGB.Core
         private const short TILEMAP_SIZE = 32;
         private const short TILE_PX = 8;
 
+        private const int HBLANK_CYCLES = 207;
+        private const int VBLANK_CYCLES = 4560;
+        private const int OAM_CYCLES = 83;
+        private const int LCDCOPY_CYCLES = 175;
+
+
+        /// <summary>
+        /// Y Scroll amount memory-mapped register.
+        /// </summary>
         public byte SCY 
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// X Scroll amount memory-mapped register.
+        /// </summary>
         public byte SCX
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// Memory-mapped register with the current scanline.
+        /// </summary>
         public byte LY
         {
             get { return (byte)scanline; }
             set { scanline = 0; } //FIXME: Should this actually do that? That'll f things up! 
         }
 
+        /// <summary>
+        /// The LYC memory-mapped register.
+        /// This is used for the LY=LYC Coincidence LCDC interrupt.
+        /// </summary>
         public byte LYC
         {
             get;
@@ -129,7 +154,7 @@ namespace HappyGB.Core
         public GraphicsController()
         {
             buffer = new ScreenSurface();
-            state = LCDState.HBlank;
+            state = LCDState.OamAccess;
             clock = scanline = 0;
             lcdcHblank = lcdcOamAccess = lcdcEqual = lcdcVblank = false;
             blitter = new SurfaceBlitter();
@@ -147,66 +172,72 @@ namespace HappyGB.Core
         public InterruptType Update(int ticks)
         {
             clock += ticks;
-            switch (state) 
+
+            switch (state)
             {
-            case LCDState.HBlank:
-                if (clock > 207) 
-                {
-                    clock = 0;
-                    state = LCDState.OamAccess;
-                }
-                break;
-
-            case LCDState.VBlank:
-                //We update the scanline here too.
-                scanline = (144 + (clock / SCANLINE_INTERVAL));
-                if (clock == ticks) //since we just booped the counter.
-                {
-                    if (lcdcVblank) //FIXME: we can't have two interupts @ the same time right?
-                        return InterruptType.VBlank | InterruptType.LCDController;
-                    else return InterruptType.VBlank; //This should work???
-                }
-
-                if (clock > 4560) 
-                {
-                    clock = scanline = 0;
-                    state = LCDState.OamAccess;
-                    if (lcdcOamAccess)
-                        return InterruptType.LCDController;
-                }
-                break;
-
-            case LCDState.OamAccess:
-                if (clock > 83) {
-                    clock = 0;
-                    state = LCDState.LCDCopy;
-                }
-                break;
-
-            case LCDState.LCDCopy:
-                if(clock > 175)
-                {
-                    if (scanline >= 144)
+                case LCDState.HBlank: //Mode 0
+                    //Are we done with this one yet?
+                    if (clock > HBLANK_CYCLES)
                     {
-                        state = LCDState.VBlank; 
-                        clock = 0;
+                        if (scanline >= 144) //Should switch to VBlank.
+                        {
+                            clock = 0;
+                            state = LCDState.VBlank;
+                            //Raise the VBlank interrupt if enabled.
+                            if (lcdcVblank)
+                                return InterruptType.VBlank | InterruptType.LCDController;
+                            else return InterruptType.VBlank;
+                        }
+                        else
+                        {
+                            clock = 0;
+                            state = LCDState.OamAccess;
+                            scanline++;
+                            if (lcdcOamAccess)
+                                return InterruptType.LCDController;
+                        }
                     }
-                    else
+                    break;
+                case LCDState.OamAccess: //Mode 2
+                    if (clock > OAM_CYCLES) //Switch to LCD Copy.
                     {
                         clock = 0;
-                        WriteScanline();
-                        scanline++;
+                        state = LCDState.LCDCopy;
+
+                        //Also raise the LCDC interrupt if we have one and it's enabled.
+                        if ((LY == LYC) && (lcdcEqual)) 
+                        {
+                            return InterruptType.LCDController;
+                        }
+                    }
+                    break;
+                case LCDState.LCDCopy: //Mode 3
+                    if (clock > LCDCOPY_CYCLES) //Switch to HBlank
+                    {
+                        clock = 0;
                         state = LCDState.HBlank;
-                    }
 
-                    if (LY == LYC) {
-                        //TODO: If we have ly=lyc interrupts enabled fire one.
-                        return InterruptType.LCDController;
-                    }
-                }
+                        if(scanline < 144)
+                            WriteScanline();
 
-                break;
+                        //Also raise the HBlank interrupt if it's enabled.
+                        if (lcdcHblank) 
+                            return InterruptType.LCDController;
+                    }
+                    break;
+                case LCDState.VBlank: //Mode 1
+                    scanline = (144 + (clock / SCANLINE_INTERVAL));
+                    if (clock > VBLANK_CYCLES)
+                    {
+                        clock = 0;
+                        scanline = 0;
+                        state = LCDState.OamAccess;
+                        if (lcdcOamAccess)
+                            return InterruptType.LCDController;
+                    }
+                    break;
             }
+            //No interrupt!
             return InterruptType.None;
         }
 

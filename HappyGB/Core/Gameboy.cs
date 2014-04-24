@@ -19,7 +19,7 @@ namespace HappyGB.Core
         }
         public Gameboy(IInputProvider input)
         {
-            CartReader cartReader = new CartReader("ttt.gb");
+            CartReader cartReader = new CartReader("Tetris.gb");
             cart = cartReader.CreateMBC();
             cartReader.Dispose();
             gfx = new GraphicsController();

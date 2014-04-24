@@ -43,27 +43,27 @@ namespace HappyGB.Core
 
                 else if ((p1State & 0x20) == 0x20)
                 {
-                    if (input.GetInputState(GameboyKey.A))
+                    if (!input.GetInputState(GameboyKey.A))
                         val |= 0x01;
-                    if (input.GetInputState(GameboyKey.B))
+                    if (!input.GetInputState(GameboyKey.B))
                         val |= 0x02;
-                    if (input.GetInputState(GameboyKey.Select))
+                    if (!input.GetInputState(GameboyKey.Select))
                         val |= 0x04;
-                    if (input.GetInputState(GameboyKey.Start))
+                    if (!input.GetInputState(GameboyKey.Start))
                         val |= 0x08;
-                    return (byte)(val & p1State);
+                    return (byte)(val | p1State);
                 }
                 else
                 {
-                    if (input.GetInputState(GameboyKey.Right))
+                    if (!input.GetInputState(GameboyKey.Right))
                         val |= 0x01;
-                    if (input.GetInputState(GameboyKey.Left))
+                    if (!input.GetInputState(GameboyKey.Left))
                         val |= 0x02;
-                    if (input.GetInputState(GameboyKey.Up))
+                    if (!input.GetInputState(GameboyKey.Up))
                         val |= 0x04;
-                    if (input.GetInputState(GameboyKey.Down))
+                    if (!input.GetInputState(GameboyKey.Down))
                         val |= 0x08;
-                    return (byte)(val & p1State);
+                    return (byte)(val | p1State);
                 }
             }
             set
@@ -181,6 +181,11 @@ namespace HappyGB.Core
                     {
                         case 0x00:
                             P1 = value;
+                            break;
+
+                        //serial log
+                        case 0x01:
+                            System.Diagnostics.Debug.Write((char)value);
                             break;
 
                         case 0xFF:
