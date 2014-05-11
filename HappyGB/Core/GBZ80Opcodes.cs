@@ -88,7 +88,7 @@ namespace HappyGB.Core
         public void SUB_A_n(byte nv)
         {
 
-            ///FIXME: Prolly slow. find some crazy bitwise stupid shit to doi inst.
+            ///FIXME: Prolly slow. find some crazy bitwise stupid stuff to doi inst.
             ///FIXME: Is this correct too? if a > b we dont need to borrow in a-b.
             int hcOperand = (nv & 0x0F);
             int hcA = (R.a & 0x0F);
@@ -430,7 +430,7 @@ namespace HappyGB.Core
                 M.Write16(R.sp, R.pc);
                 R.pc = newPc;
 
-                System.Diagnostics.Debug.WriteLine("Calling " + newPc.ToString("X4"));
+                //System.Diagnostics.Debug.WriteLine("Calling " + newPc.ToString("X4"));
 
                 return 12;
             }

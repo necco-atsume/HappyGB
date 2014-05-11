@@ -9,8 +9,8 @@ namespace HappyGB.Core
     public class MBC1
         : IMemoryBankController
     {
-        private int ROM_BANK_SIZE = 0x4000;
-        private int RAM_BANK_SIZE = 0x2000;
+        private const int ROM_BANK_SIZE = 0x4000;
+        private const int RAM_BANK_SIZE = 0x2000;
 
         private bool ramMode;
 

@@ -69,7 +69,7 @@ namespace HappyGB.Core
             while (true) {
                 var pcOld = R.pc;
                 ///Hack: Breakpoints will be implemented actually sometime.
-                if (R.pc == 0x21cc)
+                if (R.pc == 0xC8b2)
                 {
                     System.Diagnostics.Debug.WriteLine("Breakpoint hit!");
                 }
