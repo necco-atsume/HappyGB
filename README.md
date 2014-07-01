@@ -13,5 +13,5 @@ The core of the emulator is mostly complete, but there are a few bugs to work ou
 
 This does not run any games yet and the file path for the rom is hard-coded. It also expects there to be a DMG boot rom named 'DMG_ROM.bin' in the executable directory.
 
-HappyGB is released under the WTF-PL. See the included LICENSE file for more info. 
+HappyGB is released under the MIT license. See the included LICENSE file for more info. 
 
