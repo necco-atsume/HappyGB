@@ -1,0 +1,3 @@
+[submodule "FNA"]
+	path = FNA
+	url = git@github.com:corick/FNA.git
