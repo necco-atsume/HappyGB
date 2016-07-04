@@ -272,12 +272,8 @@ namespace HappyGB.Core
 
         public void RLC(byte* n)
         {
-            //Rotate Left thru Carry.
-
-            //If the MSB is set, we'll need to shift it into the carry flag.
             bool msb = (*n & 0x80) == 0x80;
 
-            
             byte nv = (byte)(*n << 1);
 
             if (msb)
@@ -485,7 +481,11 @@ namespace HappyGB.Core
         {
             R.pc = M.Read16(R.sp); 
             R.sp += 2;
-            this.stackTrace.Pop();
+
+            if (this.stackTrace.Count != 0)
+            {
+                this.stackTrace.Pop();
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
