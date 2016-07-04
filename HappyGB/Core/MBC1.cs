@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace HappyGB.Core
 {
+    /// <summary>
+    /// An implementation of the MBC1 controller for cartridges.
+    /// </summary>
     public class MBC1
         : IMemoryBankController
     {
@@ -64,6 +67,8 @@ namespace HappyGB.Core
             ram = new byte[ramSizeKB]; 
 
             Reset();
+
+            System.Diagnostics.Debug.WriteLine("<<mbc1 {0} {1} {2}>>", mbc, romSizeKB, ramSizeKB);
         }
 
         public void Reset()

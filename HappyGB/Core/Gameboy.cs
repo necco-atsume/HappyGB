@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace HappyGB.Core
 {
@@ -17,9 +18,17 @@ namespace HappyGB.Core
             get;
             private set;
         }
+
+        /// <summary>
+        /// FIXME: Hack: This is public for the debug view. 
+        /// </summary>
+        public GBZ80 Cpu
+        {
+            get { return cpu; }
+        }
         public Gameboy(IInputProvider input)
         {
-            CartReader cartReader = new CartReader("02-write_timing.gb");
+            CartReader cartReader = new CartReader("cpu_instrs.gb");
             cart = cartReader.CreateMBC();
             cartReader.Dispose();
             gfx = new GraphicsController();
@@ -38,11 +47,29 @@ namespace HappyGB.Core
         public void RunOneFrame()
         {
             cpu.Run(gfx, timer);
+
         }
 
         public ISurface GetSurface() //FIXME: Should be property.
         {
             return gfx.Surface;
+        }
+
+        //Temporary function for generating the inscruction frequency histogram. This should be removed.
+        public IEnumerable<string> DbgDumpInstructionHistogram()
+        {
+            for (int i = 0; i < cpu.InstructionFrequencyCount.Length; i++)
+            {
+                //Make the opcode
+                string instr = i.ToString() + ",0x";
+                if (i > 0xFF)
+                {
+                    instr += "CB 0x";
+                }
+                instr += (i > 0xFF? i - 0xFF: i).ToString("X") + ",";
+                instr += cpu.InstructionFrequencyCount[i].ToString();
+                yield return instr;
+            }
         }
     }
 }

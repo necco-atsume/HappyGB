@@ -1,5 +1,7 @@
 using System;
 
+//FIXME: Incorrect number of ticks for branch-dependent jumps (JP z, etc) if the branch is taken.
+
 namespace HappyGB.Core
 {
     public partial class GBZ80
@@ -10,6 +12,11 @@ namespace HappyGB.Core
             {
                 byte opFirst = Fetch8();
 
+
+                if (opFirst != 0xCB)
+                {
+                    InstructionFrequencyCount[opFirst]++;
+                }
                 //if (R.pc > 0xFF00)
                 
                 //System.Diagnostics.Debug.WriteLine("op:" + opFirst.ToString("X"));
@@ -934,9 +941,9 @@ namespace HappyGB.Core
                     ADD_SP_n(Fetch8());
                     Tick(16);
                     break;
-                case 0xE9:
+                case 0xE9: //JP (hl)
                     //JP(M[R.hl], true);
-                    JP(R.hl, true);
+                    JP(R.hl, true); //'with the exception of some jump instructions'
                     //no tick; ticks 4 in jp.
                     //FIXME: 8bit data?
                     break;
@@ -988,7 +995,8 @@ namespace HappyGB.Core
                     Tick(12);
                     break;
                 case 0xF9:
-                    R.hl = R.sp;
+                        //R.hl = R.sp;
+                    R.sp = R.hl;
                     Tick(8);
                     break;
                 case 0xFA:
@@ -1013,9 +1021,12 @@ namespace HappyGB.Core
             }
         }
 
+        [System.Runtime.CompilerServices.MethodImpl(methodImplOptions: System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public unsafe void CBExecute()
         {
             byte opCB = Fetch8();
+
+            InstructionFrequencyCount[opCB + 0xFF]++;
 
             fixed(RegisterGroup* rp = &R)
             {

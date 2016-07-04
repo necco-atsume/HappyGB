@@ -39,17 +39,26 @@ namespace HappyGB.Core
 		}
 
 		private int _tima;
+        /// <summary>
+        /// TIMA memory-mapped register
+        /// </summary>
 		public byte TIMA {
 			get {
 				return (byte)(0xFF & _tima);
 			}
 		}
 
+        /// <summary>
+        /// TAC memory-mapped register
+        /// </summary>
 		public byte TAC {
 			get;
 			set;
 		}
 
+        /// <summary>
+        /// DIV memory-mapped register
+        /// </summary>
 		public byte DIV {
 			//div increments every 256 cycles
 			//get { return (uint)(divTicks % (256 * 256)) / 256; }
@@ -57,6 +66,9 @@ namespace HappyGB.Core
 			set { divTicks = 0; }
 		}
 
+        /// <summary>
+        /// Creates a new instance of the Timer Controller with TMA, TIMA, and DIV set to 0
+        /// </summary>
 		public TimerController()
 		{
 			TMA = 0;
@@ -64,6 +76,11 @@ namespace HappyGB.Core
 			_tima = 0;
 		}
 
+        /// <summary>
+        /// Advances the timer and updates the applicable registers.
+        /// </summary>
+        /// <param name="ticks">Ticks to advance the clock by.</param>
+        /// <returns>May return an interrupt if the timer overflows. </returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public InterruptType Tick(int ticks)
 		{

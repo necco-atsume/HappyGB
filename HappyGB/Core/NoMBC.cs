@@ -3,6 +3,9 @@ using System.IO;
 
 namespace HappyGB.Core
 {
+    /// <summary>
+    /// A ROM-only cartridge implementation backed by a single byte[] buffer.
+    /// </summary>
     public class NoMBC
         : IMemoryBankController
     {

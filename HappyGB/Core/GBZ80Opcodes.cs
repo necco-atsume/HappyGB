@@ -15,42 +15,75 @@ namespace HappyGB.Core
         #endregion
 
         #region LD 16bit
+
+        /// <summary>
+        /// Load the 16 bits under the PC into the given register.
+        /// </summary>
+        /// <param name="reg">16bit register to load to</param>
         public void LD_rr_imm16(ushort* reg)
         {
             *reg = Fetch16();
         }
 
+        /// <summary>
+        /// Loads the value in the given register to the memory location under the PC 
+        /// </summary>
+        /// <param name="reg"></param>
         public void LD_imm16_rr(ushort reg)
         {
             M.Write16(Fetch16(), reg);
         }
 
+        /// <summary>
+        /// Sets the stack pointer to be equal to the HL register.
+        /// </summary>
         public void LD_sp_hl()
         {
             R.sp = R.hl;
         }
 
+        /// <summary>
+        /// Sets the HL register to be equal to the value under the stack pointer.
+        /// Sets half carry and carry flags accordingly.
+        /// </summary>
         public void LD_hl_sp_imm()
         {
-            byte r = Fetch8();
-            if (((r + (R.sp & 0x000F)) & 0x10) == 0x10)
+            byte immediateValue = Fetch8();
+
+            if ((((immediateValue & 0xF)+ (R.sp & 0xF)) & 0x10) == 0x10) //set half carry if a half carry happened
                 R.HCF = true;
             else R.HCF = false;
-            if (((r + (R.sp & 0x00FF)) & 0x100) == 0x100)
+
+            if (((immediateValue + (R.sp & 0x00FF)) & 0x100) == 0x100) //set carry if a carry happened
                 R.CF = true;
             else R.CF = false;
-            sbyte sr = unchecked((sbyte)r);
-            int sp = R.sp;
-            sp += sr;
-            R.sp = (ushort)sp;
+
+            //reset z and n -- gbcpuman p77
+            R.ZF = false;
+            R.NF = false;
+
+            sbyte ivAsSignedByte = unchecked((sbyte)immediateValue); 
+
+            int offsetStackPointerValue = R.sp;
+            offsetStackPointerValue += ivAsSignedByte;
+
+            R.hl = (ushort)offsetStackPointerValue; //Should be HL not SP, since this is a 'ld hl'. Doh!
         }
 
+        /// <summary>
+        /// Decrements the stack pointer and writes a value to the stack.
+        /// </summary>
+        /// <param name="reg">The register to push onto the stack.</param>
         public void PUSH(ushort reg)
         {
             R.sp -= 2;
             M.Write16(R.sp, reg);
         }
 
+        /// <summary>
+        /// Copies the value at the stack pointer to the given regiser, then increments the stack pointer.
+        /// </summary>
+        /// <param name="reg"></param>
         public void POP(ushort* reg)
         {
             *reg = M.Read16(R.sp);
@@ -85,28 +118,39 @@ namespace HappyGB.Core
             ADD_A_n(nc);
         }
 
-        public void SUB_A_n(byte nv)
+        public void SUB_A_n(byte subtractValue, bool withCarryFlag = false)
         {
-
-            ///FIXME: Prolly slow. find some crazy bitwise stupid stuff to doi inst.
             ///FIXME: Is this correct too? if a > b we dont need to borrow in a-b.
-            int hcOperand = (nv & 0x0F);
+
+            //Adjust the subtract value based on the carry flag.
+            ushort cfAdjustedValue = subtractValue;
+            if (withCarryFlag && R.CF)
+                cfAdjustedValue++;
+
+            ushort resultShort = (ushort)(((ushort)R.a) - cfAdjustedValue);
+
+            //Set the carry ('set if no borrow')
+            R.CF = (resultShort & 0x100) == 0x100;
+
+            //Set the half carry ('set if no borrow from bit 4')
+            int hcOperand = (cfAdjustedValue & 0x0F); 
             int hcA = (R.a & 0x0F);
-            R.HCF = (hcOperand < hcA);
-            R.CF = nv < R.a;
+            R.HCF = ((hcOperand - hcA) & 0x10) == 0x10;
+
+            //NF is always set.
             R.NF = true;
 
-            R.a -= nv;
+            //subtract the new value from A
+            R.a = (byte)resultShort;
 
+            //ZF if flag is zero.
             R.ZF = (R.a == 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SBC_A_n(byte nc)
         {
-            if(R.CF)
-                nc--;
-            SUB_A_n(nc);
+            SUB_A_n(nc, true);
         }
 
         public void AND_A_n(byte n)
@@ -116,10 +160,7 @@ namespace HappyGB.Core
 
             R.a = (byte)(R.a & n);
 
-            if(R.a == 0)
-                R.ZF = true;
-            else
-                R.ZF = false;
+            R.ZF = R.a == 0;
         }
 
         public void OR_A_n(byte n)
@@ -127,10 +168,7 @@ namespace HappyGB.Core
             R.NF = R.CF = R.HCF = false;
             R.a = (byte)(R.a | n);
 
-            if(R.a == 0)
-                R.ZF = true;
-            else
-                R.ZF = false;
+            R.ZF = R.a == 0;
         }
 
         public void XOR_A_n(byte n)
@@ -138,11 +176,7 @@ namespace HappyGB.Core
             R.NF = R.CF = R.HCF = false;
             R.a = (byte)(R.a ^ n);
 
-            if(R.a == 0)
-                R.ZF = true;
-            else
-                R.ZF = false;
-
+            R.ZF = R.a == 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -156,35 +190,31 @@ namespace HappyGB.Core
 
         public void INC_n(byte* n)
         {
-            //FIXME: Dereference pointer three times. Is this no good?
-
             R.HCF = ((*n & 0x0F) == 0x0F); //Only way hc gets set.
             R.NF = false;
             (*n)++;
 
-            if(*n == 0)
-                R.ZF = true;
-            else
-                R.ZF = false;
+            R.ZF = *n == 0;
+
+            //C: Not affected.
         }
 
         public void DEC_n(byte* n)
         {
-            R.HCF = ((*n & 0x0F) == 0x00);
+            R.HCF = ((*n & 0x0F) == 0x00); //FIXME: This seems wrong.
             R.NF = true;
             (*n)--;
 
-            if(*n == 0)
-                R.ZF = true;
-            else
-                R.ZF = false;
+            R.ZF = *n == 0;
+
+            //C: Not affected.
         }
 
         public void DAA()
         {
-            if ((R.a & 0x0F) > 0x09)
+            if (R.HCF || (R.a & 0x0F) > 0x09)
             {
-                R.HCF = true;
+                //R.HCF = true; //?
                 R.a += 0x06;
             }
             if (R.CF || ((R.a & 0xF0) > 0x90))
@@ -197,7 +227,8 @@ namespace HappyGB.Core
         public void CPL()
         {
             R.NF = R.HCF = true;
-            R.a ^= 0xFF;
+            R.a ^= 0xFF; //From Z80Heaven: Same as XORing A with $FF or subtracting
+                         //A from $FF.
         }
         #endregion ALU 8bit
 
@@ -241,10 +272,17 @@ namespace HappyGB.Core
 
         public void RLC(byte* n)
         {
+            //Rotate Left thru Carry.
+
+            //If the MSB is set, we'll need to shift it into the carry flag.
             bool msb = (*n & 0x80) == 0x80;
+
+            
             byte nv = (byte)(*n << 1);
+
             if (msb)
                 nv++;
+
             *n = nv;
             R.CF = msb;
             R.NF = R.HCF = false;
@@ -354,7 +392,7 @@ namespace HappyGB.Core
         {
             R.NF = false;
             R.HCF = true;
-            R.ZF = (test & mask) == mask;
+            R.ZF = (test & mask) != mask; // Set if bit b of register r is 0.
         }
 
         public void SET(byte* n, byte mask)
@@ -393,7 +431,11 @@ namespace HappyGB.Core
         public void STOP()
         {
             Fetch8();
-            //throw new NotImplementedException("Stop can't be supported til we get gamepads.");
+            // FIXME: This isn't supported yet, but it shouldn't be hit in normal execution.
+            // STOP suspends the CPU & turns off the screen until a button is pressed.
+            // IIRC there's a bug / quirk with the CPU where STOP instructions consume
+            // the next instruction as well.
+            // (e.g. it's in GBCPUMAN as opcode '10 00'.)
         }
 
         #endregion
@@ -402,12 +444,10 @@ namespace HappyGB.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int JP_relative(bool cond)
         {
-            //System.Diagnostics.Debug.WriteLine("-- jr pc:" + R.pc.ToString("X"));
             byte relAddrUnsigned = Fetch8();
             sbyte relAddrSigned = unchecked((sbyte)relAddrUnsigned);
             ushort addr = (ushort)(R.pc + relAddrSigned); 
             int res = JP(addr, cond);
-            //System.Diagnostics.Debug.WriteLine("new pc:" + R.pc.ToString("X")+" --");
             return res;
         }
 
@@ -430,7 +470,7 @@ namespace HappyGB.Core
                 M.Write16(R.sp, R.pc);
                 R.pc = newPc;
 
-                //System.Diagnostics.Debug.WriteLine("Calling " + newPc.ToString("X4"));
+                this.stackTrace.Push(newPc);
 
                 return 12;
             }
@@ -445,6 +485,7 @@ namespace HappyGB.Core
         {
             R.pc = M.Read16(R.sp); 
             R.sp += 2;
+            this.stackTrace.Pop();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -463,8 +504,7 @@ namespace HappyGB.Core
 
         public void RST(ushort rstVector)
         {
-            R.sp -= 2;
-            M.Write16(R.sp, R.pc);
+            PUSH(R.pc);
             R.pc = rstVector;
         }
 

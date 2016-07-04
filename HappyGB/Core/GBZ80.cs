@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace HappyGB.Core
@@ -16,11 +17,37 @@ namespace HappyGB.Core
 
         private ulong localTickCount;
 
+        /// <summary>
+        /// The frequency count of instructions. 
+        /// Used for debugging, to get which instructions are executed less / more frequently, so that we know
+        /// which ones are potentially problematic (executed a few times, when the emulator is relatively stable)
+        /// or potentially performance bottlenecks (executed millions of times a frame).
+        /// </summary>
+        public long[] InstructionFrequencyCount
+        {
+            get; private set;
+        }
+
+        private HashSet<ushort> breakpoints = new HashSet<ushort>();
+
+        private Stack<ushort> stackTrace = new Stack<ushort>();
+
+        //private void dumpstate()...
+
+        public RegisterGroup Registers
+        {
+            get { return R; }
+        }
+
         public GBZ80(MemoryMap memoryMap)
         {
             R = new RegisterGroup();
             M = memoryMap;
             localTickCount = 0;
+
+            AddBreakpoints();
+
+            InstructionFrequencyCount = new long[512];
         }
 
         public void Reset()
@@ -33,13 +60,13 @@ namespace HappyGB.Core
             R.sp = 0xFFFE;
 
             if (M.BiosEnabled == false)
-                R.pc  = 0x0100;
+                R.pc = 0x0100;
             else R.pc = 0x0000;
 
             cpuInterruptEnable = false;
 
             //Timers.
-            M[0xFF05] = M[0xFF06] = M[0xFF07] = 0x00; 
+            M[0xFF05] = M[0xFF06] = M[0xFF07] = 0x00;
 
             //TODO: Sound
 
@@ -62,16 +89,16 @@ namespace HappyGB.Core
             ulong ticksSinceLastYield = localTickCount;
             var lcdInterrupt = InterruptType.None;
 
-            halted = false; //???
+            halted = false; 
 
             bool shouldYield = false;
-            
+
             while (true) {
                 var pcOld = R.pc;
                 ///Hack: Breakpoints will be implemented actually sometime.
-                if (R.pc == 0xC8b2)
+                if (IsAtBreakpoint())
                 {
-                    System.Diagnostics.Debug.WriteLine("Breakpoint hit!");
+                    System.Diagnostics.Debug.WriteLine("Breakpoint at 0x{0:x4} triggered.", R.pc);
                 }
 
                 //Handle interrupts.
@@ -114,29 +141,17 @@ namespace HappyGB.Core
                 //Update the lcd controller.
                 int instructionTicks = (int)(localTickCount - startTicks);
                 lcdInterrupt = graphics.Update(instructionTicks);
-                if (lcdInterrupt.HasFlag(InterruptType.VBlank))
-                {
+
+                if (lcdInterrupt.HasFlag(InterruptType.VBlank)) //Yield on vblank so we can draw the next frame.
                     shouldYield = true;
-                }
+
                 M.IF |= (byte)lcdInterrupt;
 
                 //Handle interrupts in priority order.
                 M.IF |= (byte)interrupts.Tick(instructionTicks);
 
-                /*
-                if (pcOld != R.pc + 1)
-                {
-                    if ((pcOld - R.pc > 255)
-                     || ( R.pc - pcOld > 255))
-                        //System.Diagnostics.Debug.WriteLine(R.pc.ToString("x4"));
-                        System.Diagnostics.Debug.WriteLine(R.ToString());
-                }
-                 */
-
                 if (shouldYield)
-                {
                     return true;
-                }
             }
             throw new InvalidOperationException("This shouldn't have gotten here.");
         }
@@ -164,30 +179,51 @@ namespace HappyGB.Core
 
         public void HandleInterrupt(InterruptType interrupt)
         {
-            //System.Diagnostics.Debug.WriteLine(interrupt.ToString());
             M.IF &= (byte)(0xFF - (byte)interrupt); //Unset in IF.
             cpuInterruptEnable = false; //Unset master interrupt.
             switch (interrupt)
             {
-            case InterruptType.VBlank:
-                RST(0x40);
-                break;
-            case InterruptType.LCDController:
-                RST(0x48);
-                break;
-            case InterruptType.TimerOverflow:
-                RST(0x50);
-                break;
-            case InterruptType.SerialComplete:
-                RST(0x58);
-                break;
-            case InterruptType.ButtonPress:
-                RST(0x60);
-                break;
+                case InterruptType.VBlank:
+                    RST(0x40);
+                    break;
+                case InterruptType.LCDController:
+                    RST(0x48);
+                    break;
+                case InterruptType.TimerOverflow:
+                    RST(0x50);
+                    break;
+                case InterruptType.SerialComplete:
+                    RST(0x58);
+                    break;
+                case InterruptType.ButtonPress:
+                    RST(0x60);
+                    break;
             }
             Tick(12);
         }
 
-    }
+        /// <summary>
+        /// Checks if the list of breakpoints contains the current PC.
+        /// </summary>
+        /// <returns></returns>
+        public bool IsAtBreakpoint()
+        {
+            if (breakpoints.Contains(this.R.pc))
+                return true;
+            else return false;
+        }
+
+        /// <summary>
+        /// Adds each of the breakpoints. 
+        /// </summary>
+        public void AddBreakpoints()
+        {
+            breakpoints.Add(0x100); //Entry point for ROM
+            breakpoints.Add(0x0546);
+            breakpoints.Add(0x1aac);
+
+        }
+
+}
 }
 

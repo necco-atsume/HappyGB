@@ -1,9 +1,13 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace HappyGB.Core
 {
+    /// <summary>
+    /// Defines a gameboy's internal memory map.
+    /// </summary>
     public class MemoryMap
     {
         private byte[] internalRam;
@@ -14,6 +18,9 @@ namespace HappyGB.Core
 
         public byte IE, IF;
 
+        /// <summary>
+        /// Is the BIOS enabled?
+        /// </summary>
         public bool BiosEnabled
         {
             get { return biosEnabled; }
@@ -185,7 +192,8 @@ namespace HappyGB.Core
 
                         //serial log
                         case 0x01:
-                            System.Diagnostics.Debug.Write((char)value);
+                            //System.Diagnostics.Debug.Write((char)value);
+                            this.DebugSerialOut((char)value);
                             break;
 
                         case 0xFF:
@@ -309,6 +317,12 @@ namespace HappyGB.Core
             this[(ushort)(addr + 1)] = (byte)((value >> 8) & 0xFF);
         }
 
+
+        [Conditional("DEBUG")]
+        private void DebugSerialOut(char value)
+        {
+            Debug.Write(value);
+        }
     }
 }
 

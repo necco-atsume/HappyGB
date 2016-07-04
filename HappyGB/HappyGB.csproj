@@ -13,6 +13,8 @@
     <StartupObject>HappyGB.Program</StartupObject>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">.\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,10 +42,17 @@
     <Content Include="app.desktop">
       <DeployService-TargetDirectoryId>Linux.DesktopApplications</DeployService-TargetDirectoryId>
     </Content>
-    <Content Include="SDL.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Reference Include="MonoGame.Framework, Version=3.4.0.459, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\MonoGame.Framework.WindowsGL.3.4.0.459\lib\net40\MonoGame.Framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>packages\MonoGame.Framework.WindowsGL.3.4.0.459\lib\net40\OpenTK.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -62,7 +71,6 @@
     <Compile Include="Core\IMemoryBankController.cs" />
     <Compile Include="Core\GBZ80OpcodeTable.cs" />
     <Compile Include="Core\Gameboy.cs" />
-    <Compile Include="Game1.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Core\NoMBC.cs" />
     <Compile Include="Core\CartReader.cs" />
@@ -75,12 +83,18 @@
     <Compile Include="Core\InterruptType.cs" />
     <Compile Include="Core\GbPalette.cs" />
     <Compile Include="Core\GbColorMonochrome.cs" />
+    <Compile Include="Xna\ButtonView.cs" />
     <Compile Include="Xna\GbGame.cs" />
+    <Compile Include="Xna\IDebugView.cs" />
+    <Compile Include="Xna\RegisterView.cs" />
     <Compile Include="Xna\VramViewer.cs" />
     <Compile Include="Xna\XnaInputProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpu_instrs.gb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="cpu_instrs_other.gb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="DMG_ROM.bin">
@@ -121,5 +135,4 @@
     </MonoDevelop>
   </ProjectExtensions>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Import Project="packages\MonoGame.3.0.1\build\net40\MonoGame.targets" Condition="Exists('packages\MonoGame.3.0.1\build\net40\MonoGame.targets')" />
 </Project>

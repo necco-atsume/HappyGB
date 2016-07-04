@@ -13,7 +13,7 @@ namespace HappyGBTests
 		[TestFixtureSetUp]
 		public void CreateMocks()
 		{
-			mem = new MemoryMap(null, null, null);
+			mem = new MemoryMap(null, null, null, null);
 			mem[0xE000] = 0x0F;
 			mem[0xE001] = 0xF0;
 			mem[0xE002] = 0x0F;

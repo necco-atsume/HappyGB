@@ -5,8 +5,8 @@ namespace HappyGB.Core
 {
 	/// <summary>
 	/// The group of registers for a CPU.
-	/// Some crazy union thing so it's way faster,
-	/// and easy to implement af/bc without bitwise stuffs.
+	/// Some crazy union thing so it's way faster (?),
+	/// and easy to unify the 8 / 16 bit registers without bitwise stuffs.
 	/// </summary>
 	[StructLayout(LayoutKind.Explicit)]
 	public struct RegisterGroup
