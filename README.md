@@ -19,4 +19,3 @@ This does not run any games yet and the file path for the rom is hard-coded.
 To use a boot ROM place it in the executable directory with the name 'DMG_ROM.bin'.  (Alternately, place it in the HappyGB.FNA\External directory and it will be copied on build.)
 
 HappyGB is released under the MIT license. See the included LICENSE file for more info. 
-
