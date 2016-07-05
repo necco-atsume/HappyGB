@@ -45,7 +45,7 @@ namespace HappyGB.Core
         public void Initialize()
         {
             cpu.Reset();
-            //Other init code here. Set graphics/io to default states.
+            //TODO: Other init code here. Set graphics/io to default states.
         }
 
         public void RunOneFrame()

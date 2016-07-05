@@ -1,10 +1,4 @@
-HappyGB/obj/*
-HappyGB/bin/*
-HappyGB/packages/*
-
-HappyGB/HappyGBTests/bin/*
-HappyGB/HappyGBTests/obj/*
-HappyGB/HappyGBTests/packages/*
+HappyGB.FNA/External/*
 
 *.dll
 *.user

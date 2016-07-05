@@ -281,11 +281,19 @@ namespace HappyGB.Core.Memory
             biosEnabled = true;
 
             this.input = input;
-            
-            using (var file = File.Open("DMG_ROM.bin", FileMode.Open, FileAccess.Read))
-            using (BinaryReader r = new BinaryReader(file))
+
+            try
             {
-                bios = r.ReadBytes(256);
+                using (var file = File.Open(@"DMG_ROM.bin", FileMode.Open, FileAccess.Read))
+                using (BinaryReader r = new BinaryReader(file))
+                {
+                    bios = r.ReadBytes(256);
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine("No bios found, skipping.");
+                biosEnabled = false;
             }
         }
 
