@@ -1,7 +1,11 @@
 version: '0.1.{build}'
 
-install:
-    - git submodule update --init --recursive
+platform:
+    - x86
+
+configuration:
+    - Debug
+    - Release
 
 skip_commits:
     message: /NOBUILD.*/
@@ -12,6 +16,9 @@ assembly_info:
     assembly_version: "{version}"
     assembly_file_version: "{version}"
     assembly_informational_version: "{version}"
+
+install:
+    - git submodule update --init --recursive
 
 before_build:
     - nuget restore
