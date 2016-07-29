@@ -12,7 +12,7 @@ namespace HappyGB.Core.Cpu
     public partial class GBZ80
     {
         private RegisterGroup R;
-        private MemoryMap M;
+        private IMemoryMap M;
 
         private bool cpuInterruptEnable;
         private bool halted;
@@ -39,9 +39,10 @@ namespace HappyGB.Core.Cpu
         public RegisterGroup Registers
         {
             get { return R; }
+            set { R = value; } //FIXME: This feels wrong, but is probably the easiest way to unit test this as it's set up now ;_;
         }
 
-        public GBZ80(MemoryMap memoryMap)
+        public GBZ80(IMemoryMap memoryMap)
         {
             R = new RegisterGroup();
             M = memoryMap;

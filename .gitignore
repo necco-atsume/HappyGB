@@ -266,3 +266,6 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# Profiler output
+*.diagsession

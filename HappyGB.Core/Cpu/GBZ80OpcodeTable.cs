@@ -1,4 +1,5 @@
 using System;
+using HappyGB.Core.Memory;
 
 //FIXME: Incorrect number of ticks for branch-dependent jumps (JP z, etc) if the branch is taken.
 
@@ -8,9 +9,15 @@ namespace HappyGB.Core.Cpu
     {
         public unsafe void Execute()
         {
+            byte opFirst = Fetch8();
+            ExecuteOpcode(opFirst);
+        }
+
+        //FIXME: Code smell, should have just ExecuteOpcode, and read in 
+        public unsafe void ExecuteOpcode(byte opFirst)
+        {
             fixed(RegisterGroup* rp = &R)
             {
-                byte opFirst = Fetch8();
 
 
                 if (opFirst != 0xCB)
@@ -995,7 +1002,6 @@ namespace HappyGB.Core.Cpu
                     Tick(12);
                     break;
                 case 0xF9:
-                        //R.hl = R.sp;
                     R.sp = R.hl;
                     Tick(8);
                     break;
@@ -1025,6 +1031,11 @@ namespace HappyGB.Core.Cpu
         public unsafe void CBExecute()
         {
             byte opCB = Fetch8();
+            CBExecuteOpcode(opCB);
+        }
+
+        public unsafe void CBExecuteOpcode(byte opCB)
+        {
 
             InstructionFrequencyCount[opCB + 0xFF]++;
 

@@ -87,6 +87,7 @@
     <Compile Include="Input\GameboyKey.cs" />
     <Compile Include="Input\IInputProvider.cs" />
     <Compile Include="ISurface.cs" />
+    <Compile Include="Memory\IMemoryMap.cs" />
     <Compile Include="Memory\MemoryMap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

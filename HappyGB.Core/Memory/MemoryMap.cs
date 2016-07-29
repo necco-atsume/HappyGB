@@ -10,27 +10,26 @@ namespace HappyGB.Core.Memory
 {
     /// <summary>
     /// Defines a gameboy's internal memory map.
+    /// 
+    /// FIXME: This is totally not testable.
     /// </summary>
     public class MemoryMap
+        : IMemoryMap
     {
         private byte[] internalRam;
         private byte[] highRam;
         private byte[] bios;
+        private byte p1State;
 
-        private bool biosEnabled;
+        public byte IE { get; set; }
+        public byte IF { get; set; }
+        public bool BiosEnabled { get; private set; }
 
-        public byte IE, IF;
-
+        //FIXME: Magic setter.
         /// <summary>
-        /// Is the BIOS enabled?
+        /// Set to perform a DMA copy.
         /// </summary>
-        public bool BiosEnabled
-        {
-            get { return biosEnabled; }
-            set { biosEnabled = value; }
-        }
-
-        public byte DMA
+        private byte DMA
         {
             set {
                 ushort addr = value;
@@ -41,8 +40,11 @@ namespace HappyGB.Core.Memory
             }
         }
 
-        private byte p1State;
-        public byte P1
+        /// <summary>
+        /// Stores input.
+        /// Set to read input from A/B/Sel/Start, or Up/Down/Left/Right
+        /// </summary>
+        private byte P1
         {
             get
             {
@@ -89,12 +91,12 @@ namespace HappyGB.Core.Memory
 
         public byte this[ushort addr]
         {	
-            //TODO: nested switches.
+            //TODO: This is kinda slow. See what we can do about it.
             get 
             {
                 //Perform memory mapping stuff here.
                 if (addr < 0x8000)
-                    if (biosEnabled && (addr < 256))
+                    if (BiosEnabled && (addr < 256))
                         return bios[addr];
                     else return cart.Read8(addr); //Cart
                 else if (addr < 0xA000)
@@ -258,7 +260,7 @@ namespace HappyGB.Core.Memory
                         //Bios
                         case 0x50:
                             if (value == 0x01)
-                                biosEnabled = false;
+                                BiosEnabled = false;
                             break;
 
                         default:
@@ -278,7 +280,7 @@ namespace HappyGB.Core.Memory
             this.cart = cart;
             this.gfx = gfx;
             this.timer = timer;
-            biosEnabled = true;
+            BiosEnabled = true;
 
             this.input = input;
 
@@ -293,41 +295,9 @@ namespace HappyGB.Core.Memory
             catch (FileNotFoundException)
             {
                 Console.WriteLine("No bios found, skipping.");
-                biosEnabled = false;
+                BiosEnabled = false;
             }
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte Read8(ushort addr)
-        {
-            return this[addr];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write8(ushort addr, byte value)
-        {
-            this[addr] = value;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ushort Read16(ushort addr)
-        {
-            //FIXME: Endianness right?
-            ushort ret = 0;
-            ushort vr = (ushort)this[(ushort)(addr)];
-            ushort vl = (ushort)(this[(ushort)(addr + 1)] << 8);
-            ret = (ushort)(vl | vr);
-            return ret;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write16(ushort addr, ushort value)
-        {
-            //FIXME: Endianness right?
-            this[addr] = (byte)(value & 0xFF);
-            this[(ushort)(addr + 1)] = (byte)((value >> 8) & 0xFF);
-        }
-
 
         [Conditional("DEBUG")]
         private void DebugSerialOut(char value)

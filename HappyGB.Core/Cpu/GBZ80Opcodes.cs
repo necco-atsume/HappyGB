@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.CompilerServices;
 
+using HappyGB.Core.Memory;
+
 namespace HappyGB.Core.Cpu
 {
     public unsafe partial class GBZ80
@@ -103,7 +105,7 @@ namespace HappyGB.Core.Cpu
             if((res & 0x100) == 0x100)
                 R.CF = true;
 
-            if(nv == 0)
+            if(res == 0)
                 R.ZF = true;
 
             R.a = (byte)(0xFF & res);
