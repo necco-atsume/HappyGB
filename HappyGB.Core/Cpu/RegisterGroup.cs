@@ -51,19 +51,8 @@ namespace HappyGB.Core.Cpu
 		[FieldOffset(15)]
 		public bool NF;
 
-		//FieldOffset hacks for "immediate" and "indirect" pointer hacks.
-		//This will let us make opcodes like
-		//R.ind8 = M[R.hl];
-		//tick(4);
-		//ADD_a_n(*ind);
-		//M[R.hl] = R.ind8;
-
-		//TODO: GEt rid of this.
-		[FieldOffset(16)]
-		public ushort ind16;
-		[FieldOffset(16)]
-		public ushort imm16;
-
+        //HACK: So we don't have to have duplicate opcode implementations for indirect / immediate memory accesses.
+        //TODO: Still should probably just hardcode this into the case table though.
 		[FieldOffset(16)]
 		public byte ind8;
 		[FieldOffset(16)]

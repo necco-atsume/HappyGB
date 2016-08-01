@@ -20,6 +20,11 @@ namespace HappyGB.Core.Cpu
         private ulong localTickCount;
 
         /// <summary>
+        /// The cycle count.  
+        /// </summary>
+        public ulong LocalTickCount { get { return localTickCount; } }
+
+        /// <summary>
         /// The frequency count of instructions. 
         /// Used for debugging, to get which instructions are executed less / more frequently, so that we know
         /// which ones are potentially problematic (executed a few times, when the emulator is relatively stable)

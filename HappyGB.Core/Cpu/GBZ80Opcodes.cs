@@ -97,7 +97,7 @@ namespace HappyGB.Core.Cpu
         #region ALU 8bit
         public void ADD_A_n(byte nv)
         {
-            R.HCF = (((R.a & 0x0F) + (nv & 0x0F)) & 0x100) == 0x100;
+            R.HCF = (((R.a & 0x0F) + (nv & 0x0F)) & 0x10) == 0x10;
 
             R.NF = false;
 

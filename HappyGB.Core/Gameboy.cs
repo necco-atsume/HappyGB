@@ -32,7 +32,7 @@ namespace HappyGB.Core
         }
         public Gameboy(IInputProvider input)
         {
-            CartReader cartReader = new CartReader("cpu_instrs.gb");
+            CartReader cartReader = new CartReader("sml.gb");
             cart = cartReader.CreateMBC();
             cartReader.Dispose();
             gfx = new GraphicsController();

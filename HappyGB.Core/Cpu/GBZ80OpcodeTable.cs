@@ -262,8 +262,8 @@ namespace HappyGB.Core.Cpu
                     Tick(4);
                     break;
                 case 0x38:
-                    JP_relative(R.CF);
-                    Tick(8);
+                    ulong branchTicks = (ulong) JP_relative(R.CF);
+                    Tick(8 + branchTicks);
                     break;
                 case 0x39:
                     ADD_HL_rr(R.sp);
@@ -948,11 +948,9 @@ namespace HappyGB.Core.Cpu
                     ADD_SP_n(Fetch8());
                     Tick(16);
                     break;
-                case 0xE9: //JP (hl)
-                    //JP(M[R.hl], true);
+                case 0xE9: //JP (hl). Note that this opcode is written as (hl) for 'Reasons' but really means PC = HL.
                     JP(R.hl, true); //'with the exception of some jump instructions'
-                    //no tick; ticks 4 in jp.
-                    //FIXME: 8bit data?
+                    Tick(4); //Always 4.
                     break;
                 case 0xEA:
                     M[Fetch16()] = R.a;
